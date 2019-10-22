@@ -1,0 +1,174 @@
+MACRO ASSEMBLER STARTUP_STM8                       04/19/16 10:33:17 PAGE     1
+
+
+MACRO ASSEMBLER MASTM8 V2.32.10.307
+OBJECT MODULE PLACED IN DEBUG\STARTUP_STM8.O
+ASSEMBLER INVOKED BY: OBJECT(DEBUG\STARTUP_STM8.O) PIN(C:\PROGRAM FILES (X86)\RAISONANCE\RIDE\INC\STM8) PIN(C:\PROGRAM FILES (X86)\RAISONANCE\RIDE\INC\ST7) PIN(C:\PROGRAM FILES (X86)\RAISONANCE\RIDE\INC) QUIET ERRORPRINT DEBUG MODESTM8 
+
+LOC      OBJ            LINE     SOURCE
+                           1     ;=============================================================================
+                           2     ; (c) Copyright Raisonance S.A.S. 1989 - 2010, All rights reserved.
+                           3     ;=============================================================================
+                           4     ;
+                           5     ; This is the 'C' language "STARTUP" routine for RCSTM8, STM8 version.
+                           6     ;      File name:  STARTUP_STM8.ASM
+                           7     ;
+                           8     ;        Purpose:  To provide the initial startup code for STM8 or ST7 from
+                           9     ;                  power-up to the initial execution of the main() routine.
+                          10     ;
+                          11     ;          Scope:  This file contains all the code and information required
+                          12     ;                  to accomplish "Purpose". It is applicable to all memory
+                          13     ;                  models and RCSTM8 options.
+                          14     ;                  This file, assembled using the appropriate memory model,
+                          15     ;                  is automatically linked in by the linker when it encounters
+                          16     ;                  a "main" symbol in the object modules to be linked.
+                          17     ;
+                          18     ;                  The routine will be executed each time the controller
+                          19     ;                  experiences a "reset" condition.
+                          20     ;
+                          21     ;                  If you wish to use this startup routine with your assembly
+                          22     ;                  code too, you should add a "main" label in your asm code.
+                          23     ;
+                          24     ; Considerations:  The values selected are intended for a standard STM8 or ST7
+                          25     ;                  controller. In most cases these will work well for other
+                          26     ;                  processors under most conditions. The ranges for
+                          27     ;                  initialization, or the initialization values can be changed
+                          28     ;                  or modified as needed.
+                          29     ;
+                          30     ;        Caveats:  It is possible to modify this file and affect the execution
+                          31     ;                  the target processor in many ways. Often settings and
+                          32     ;                  selections have effects on each other. Some may not be
+                          33     ;                  compatible. This startup routine is provided "as is". If
+                          34     ;                  you change it to meet some design objective, you are
+                          35     ;                  responsible of the outcome of your selections, and
+                          36     ;                  their effect upon the target system.
+                          37     ;
+                          38     ;                  This file MUST be assembled in case-sensitive mode
+                          39     ;                  (assembler directive CASESENSITIVE or CS) to avoid any
+                          40     ;                  unresolved references by the linker.
+                          41     ;
+                          42     ;-----------------------------------------------------------------------------
+                          43     ;  NOTE:  YOU SHOULD ALTER THIS FILE ONLY AFTER YOU HAVE BUILT AND TESTED YOUR
+                          44     ;  CODE, AND YOU'RE CONVINCED THAT YOU CAN MAKE IT RUN OR WORK BETTER BY DOING
+                          45     ;  SO.  IF YOU ONLY NEED SOME SPECIFIC INITIALIZATIONS, IT IS RECOMMENDED THAT
+                          46     ;  YOU  DO  THEM  IN  THE FIRST FEW LINES OF YOUR MAIN() ROUTINE.  MODIFY THIS
+                          47     ;  FILE ONLY AS A LAST RESORT.
+                          48     ;=============================================================================
+                          49     ; $Id: startup_STM8.asm,v 1.2 2010/05/10 12:18:12 Bruno Exp $
+                          50     ;=============================================================================
+                          51     
+                          52             CSTART                  SEGMENT CODE INSECTION0
+------ ------------       53             RSEG                    CSTART
+                          54     
+                          55     ;-----------------------------------------------------------------------------
+                          56     ; External symbols
+                          57     ;-----------------------------------------------------------------------------
+                          58     
+                          59         ; The "?C?InitData" routine is responsible for initializing the global
+                          60         ; variables. If your application does not use global initialized variables,
+                          61         ; it will not be used.
+                          62         ; The routine is available from the standard library used with your model,
+                          63         ; for instance RCSTM8.LIB
+                          64         EXTRN   CODE(?C?InitData)
+                          65         
+                          66         ; The "?C?ZeroData" routine is responsible for initializing some global
+                          67         ; variables to 0.
+                          68         EXTRN   CODE(?C?ZeroData)
+                          69     
+                          70         ; The "main" routine is the main entry point for the user application
+                          71         EXTRN   CODE(main)
+                          72     
+                          73     
+                          74     ;-----------------------------------------------------------------------------
+                          75     ; Public symbols
+                          76     ; The symbol CST7_START is the reset entry point for the RLST7 linker.
+                          77     ; Several variants of this entry point may be required by your projects,
+                          78     ; depending of your project requirements.
+                          79     ; It is recommended that all these startup variants are defined as public
+                          80     ; symbols here.
+                          81     ;-----------------------------------------------------------------------------
+                          82     
+                          83         PUBLIC  CST7_START                  ; Minimal startup
+                          84         PUBLIC  CST7_START_V                ; Startup with global variables initialization
+                          85         PUBLIC  CST7_START_Z                ; Startup with a segment initialized to 0
+                          86         PUBLIC  CST7_START_V_Z              ; Startup with globals + initialization to 0
+                          87     
+                          88     
+                          89     ;=============================================================================
+                          90     ; Reset entry point. This is the first piece of code to get called upon
+                          91     ; RESET conditions
+                          92     ;=============================================================================
+                          93     
+                          94     CST7_START:
+                          95     CST7_START_V:
+                          96     CST7_START_Z:
+                          97     CST7_START_V_Z:
+                          98     
+                          99     ;-----------------------------------------------------------------------------
+                         100     ; Whole RAM cleanup routine (optional): Initializes the whole RAM to 00's.
+                         101     ; This code takes advantage of the fact that SP is at top of RAM and that all
+                         102     ; addresses below SP can be freely overwritten.
+                         103     ;-----------------------------------------------------------------------------
+                         104     $IF(1)                                  ; $IF(0) will disable whole RAM cleanup
+0000   96                105         LDW     X, SP
+                         106     _ramcleanup:
+0001   7F                107         CLR     (X)
+0002   5A                108         DECW    X
+0003   2AFC              109         JRPL    _ramcleanup
+                         110     $ELSE
+                                     ; Comment out the following line if your project does not use any
+                                     ; 0-initialized C global variables initialization.
+                                     ; ?C?ZeroData must be called BEFORE ?C?InitData
+                                     CALL    ?C?ZeroData                 ; Initialize null global variables
+                                 $ENDIF
+                         116     
+                         117     ; Comment out the following line if your project does not use any C global
+                         118     ; variables initialization. If you are unsure, just leave it as it is.
+0005   CD0000      F     119         CALL    ?C?InitData                 ; Initialize global variables.
+                         120     
+0008   CC0000      F     121         JP      main                        ; Call the user entry point (main)
+                         122                                             ; main must NEVER return!
+                         123     ;;; JPF     main                        ; Necessary if "main" is above address FFFFh
+                         124     
+                         125     
+                         126     ;=============================================================================
+                         127     ; Interrupt vector table (in fact just the reset vector is present here)
+                         128     ;=============================================================================
+                         129     
+------ ------------      130         CSEG    AT 08000h                   ; Interrupt vectors start at 8000h on STM8
+                         131     
+8000   8200              132         DB      082h, 000h                  ; The interrupt address in in 24-bits mode,
+8002   0000        F     133         DW      CST7_START                  ; and preceded by the 82h opcode.
+                         134     
+                         135     
+                         136     END
+MACRO ASSEMBLER STARTUP_STM8                       04/19/16 10:33:17 PAGE     2
+
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+CST7_START_V . . .  C   ADDR 000000H   R SEG=CSTART
+MAIN . . . . . . .  C   ADDR -------     EXT   
+_RAMCLEANUP. . . .  C   ADDR 000001H   R SEG=CSTART
+CST7_START_Z . . .  C   ADDR 000000H   R SEG=CSTART
+CST7_START . . . .  C   ADDR 000000H   R SEG=CSTART
+?C?INITDATA. . . .  C   ADDR -------     EXT   
+CSTART . . . . . .  C   SEG  00000BH     REL=UNIT           
+CST7_START_V_Z . .  C   ADDR 000000H   R SEG=CSTART
+STARTUP_STM8 . . .  N   NUMB -------
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE      =      15    ----
+   DATA SIZE      =    ----    ----
+   BIT SIZE       =    ----    ----
+END OF MODULE INFORMATION.
+
+
+
+ASSEMBLY COMPLETE.   0 WARNING(S)   0 ERROR(S)

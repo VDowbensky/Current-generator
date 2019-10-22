@@ -1,0 +1,662 @@
+###############################################################################
+#                                                                             #
+# IAR C/C++ Compiler V6.12.1.50500 for Atmel AVR        11/Feb/2015  02:09:27 #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Source file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\main_def_func #
+#                    .c                                                       #
+#    Command line =  --string_literals_in_flash G:\Work\Projects\ATMEL\IAR\C\ #
+#                    MENU_TEMPLATE\main_def_func.c --cpu=m32a -ms -o          #
+#                    G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\    #
+#                    -lCN G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Li #
+#                    st\ --initializers_in_flash --debug                      #
+#                    -DENABLE_BIT_DEFINITIONS -e --eeprom_size 1024 --clib    #
+#                    -Ohz                                                     #
+#    List file    =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\List\ma #
+#                    in_def_func.lst                                          #
+#    Object file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\mai #
+#                    n_def_func.r90                                           #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\main_def_func.c
+      1          //========================================================================
+      2          #include "main_def_func.h"
+
+   \                                 In  segment ABSOLUTE, at 0x30
+   \   union <unnamed> volatile __io _A_PIND
+   \                     _A_PIND:
+   \   00000000                      DS8 1
+
+   \                                 In  segment ABSOLUTE, at 0x41
+   \   union <unnamed> volatile __io _A_WDTCR
+   \                     _A_WDTCR:
+   \   00000000                      DS8 1
+
+   \                                 In  segment ABSOLUTE, at 0x55
+   \   union <unnamed> volatile __io _A_MCUCR
+   \                     _A_MCUCR:
+   \   00000000                      DS8 1
+
+   \                                 In  segment ABSOLUTE, at 0x5b
+   \   union <unnamed> volatile __io _A_GICR
+   \                     _A_GICR:
+   \   00000000                      DS8 1
+      3          //========================================================================
+      4          
+      5          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+      6          void wdt_enable (u08 a)
+   \                     wdt_enable:
+      7          {
+      8             __watchdog_reset ();
+   \   00000000   95A8               WDR
+      9          
+     10             WDTCR = (1<<WDTOE) | (1<<WDE) | a;
+   \   00000002   6108               ORI     R16, 0x18
+   \   00000004                      REQUIRE ?Subroutine5
+   \   00000004                      REQUIRE _A_WDTCR
+   \   00000004                      ;               // Fall through to label ?Subroutine5
+     11          }
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine5:
+   \   00000000   BD01               OUT     0x21, R16
+   \   00000002   9508               RET
+     12          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     13          void wdt_disable (void)
+   \                     wdt_disable:
+     14          {
+     15             __watchdog_reset ();
+   \   00000000   95A8               WDR
+     16          
+     17             WDTCR |= (1<<WDTOE) | (1<<WDE);
+   \   00000002   B501               IN      R16, 0x21
+   \   00000004   6108               ORI     R16, 0x18
+   \   00000006   BD01               OUT     0x21, R16
+     18          
+     19             WDTCR = 0x00;
+   \   00000008   E000               LDI     R16, 0
+   \   0000000A   ....               RJMP    ?Subroutine5
+   \   0000000C                      REQUIRE _A_WDTCR
+     20          }
+     21          //------------------------------------------------------------------------
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     22          void ext_int0_init (void)
+   \                     ext_int0_init:
+     23          {
+     24             MCUCR |= (1<<ISC01); // Прерывание по спаду фронта.
+   \   00000000   B705               IN      R16, 0x35
+   \   00000002   6002               ORI     R16, 0x02
+   \   00000004   BF05               OUT     0x35, R16
+     25             GICR |= (1<<INT0);
+   \   00000006   B70B               IN      R16, 0x3B
+   \   00000008   6400               ORI     R16, 0x40
+   \   0000000A   BF0B               OUT     0x3B, R16
+     26          }
+   \   0000000C   9508               RET
+   \   0000000E                      REQUIRE _A_MCUCR
+   \   0000000E                      REQUIRE _A_GICR
+     27          //------------------------------------------------------------------------
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     28          void sleep_mode_init (void)
+   \                     sleep_mode_init:
+     29          {
+     30             MCUCR |= (1<<SE);
+   \   00000000   B705               IN      R16, 0x35
+   \   00000002   6800               ORI     R16, 0x80
+   \   00000004   BF05               OUT     0x35, R16
+     31          }
+   \   00000006   9508               RET
+   \   00000008                      REQUIRE _A_MCUCR
+     32          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     33          void sleep_mode_enable (void)
+   \                     sleep_mode_enable:
+     34          {
+     35             asm("SLEEP");
+   \   00000000   9588               SLEEP
+     36             asm("NOP");
+   \   00000002   0000               NOP
+     37          }
+   \   00000004   9508               RET
+     38          //========================================================================
+     39          
+     40          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     41          extern void empty_func (void)
+   \                     empty_func:
+     42          {
+     43          }
+   \   00000000   9508               RET
+     44          //========================================================================
+     45          
+     46          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     47          void wait_50_us (void)
+   \                     wait_50_us:
+     48          {
+   \   00000000   019C               MOVW    R19:R18, R25:R24
+     49             u16 cnt_1 = 50;
+     50             u16 cnt_2 = 50;
+   \   00000002   E382               LDI     R24, 50
+   \   00000004   E090               LDI     R25, 0
+   \   00000006   E302               LDI     R16, 50
+     51          
+     52             while (cnt_1)
+     53             {
+     54                __watchdog_reset ();
+   \                     ??wait_50_us_0:
+   \   00000008   95A8               WDR
+   \   0000000A   C001               RJMP    ??wait_50_us_1
+     55          
+     56                while (cnt_2)
+     57                {
+     58                   cnt_2--;
+   \                     ??wait_50_us_2:
+   \   0000000C   9701               SBIW    R25:R24, 1
+     59                }
+   \                     ??wait_50_us_1:
+   \   0000000E   2F18               MOV     R17, R24
+   \   00000010   2B19               OR      R17, R25
+   \   00000012   F7E1               BRNE    ??wait_50_us_2
+     60                cnt_1--;
+   \   00000014   950A               DEC     R16
+     61             }
+   \   00000016   F7C1               BRNE    ??wait_50_us_0
+     62          }
+   \   00000018   01C9               MOVW    R25:R24, R19:R18
+   \   0000001A   9508               RET
+     63          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     64          void wait_5_ms (void)
+   \                     wait_5_ms:
+     65          {
+   \   00000000   2F19               MOV     R17, R25
+   \   00000002   2F28               MOV     R18, R24
+     66             u16 cnt_1 = 5000;
+     67             u16 cnt_2 = 5000;
+   \   00000004   E888               LDI     R24, 136
+   \   00000006   E193               LDI     R25, 19
+   \   00000008   01FC               MOVW    R31:R30, R25:R24
+     68          
+     69             while (cnt_1)
+     70             {
+     71                __watchdog_reset ();
+   \                     ??wait_5_ms_0:
+   \   0000000A   95A8               WDR
+   \   0000000C   C001               RJMP    ??wait_5_ms_1
+     72          
+     73                while (cnt_2)
+     74                {
+     75                   cnt_2--;
+   \                     ??wait_5_ms_2:
+   \   0000000E   9701               SBIW    R25:R24, 1
+     76                }
+   \                     ??wait_5_ms_1:
+   \   00000010   2F08               MOV     R16, R24
+   \   00000012   2B09               OR      R16, R25
+   \   00000014   F7E1               BRNE    ??wait_5_ms_2
+     77                cnt_1--;
+   \   00000016   9731               SBIW    R31:R30, 1
+     78             }
+   \   00000018   F7C1               BRNE    ??wait_5_ms_0
+     79          }
+   \   0000001A   2F82               MOV     R24, R18
+   \   0000001C   2F91               MOV     R25, R17
+   \   0000001E   9508               RET
+     80          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     81          void wait_20_ms (void)
+   \                     wait_20_ms:
+     82          {
+   \   00000000   938A               ST      -Y, R24
+     83             u08 cnt = 4;
+   \   00000002   E084               LDI     R24, 4
+   \   00000004   C001               RJMP    ??wait_20_ms_0
+     84          
+     85             while (cnt--)
+     86             {
+     87                wait_5_ms ();
+   \                     ??wait_20_ms_1:
+   \   00000006   ....               RCALL   wait_5_ms
+     88             }
+   \                     ??wait_20_ms_0:
+   \   00000008   ....               RCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_2:
+   \   0000000A   F7E9               BRNE    ??wait_20_ms_1
+     89          }
+   \   0000000C   ....               RJMP    ??Subroutine6_0
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine1:
+   \   00000000   2F08               MOV     R16, R24
+   \   00000002   958A               DEC     R24
+   \   00000004   2300               TST     R16
+   \   00000006   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ??Subroutine6_0:
+   \   00000000   9189               LD      R24, Y+
+   \   00000002   9508               RET
+     90          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     91          void wait_200_ms (void)
+   \                     wait_200_ms:
+     92          {
+   \   00000000   938A               ST      -Y, R24
+     93             u08 cnt = 10;
+   \   00000002   E08A               LDI     R24, 10
+   \   00000004   ....               RJMP    ?Subroutine3
+     94          
+     95             while (cnt--)
+     96             {
+     97                wait_20_ms ();
+     98             }
+     99          }
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine2:
+   \   00000000   ....               RJMP    wait_20_ms
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine3:
+   \   00000000   C001               RJMP    ??CrossCallReturnLabel_4
+   \                     ??Subroutine3_0:
+   \   00000002   ....               RCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_4:
+   \   00000004   ....               RCALL   ?Subroutine1
+   \                     ??CrossCallReturnLabel_3:
+   \   00000006   F7E9               BRNE    ??Subroutine3_0
+   \   00000008                      REQUIRE ??Subroutine6_0
+   \   00000008                      ;               // Fall through to label ??Subroutine6_0
+    100          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    101          void wait_500_ms (void)
+   \                     wait_500_ms:
+    102          {
+   \   00000000   938A               ST      -Y, R24
+    103             u08 cnt = 25;
+   \   00000002   E189               LDI     R24, 25
+   \   00000004   ....               RJMP    ?Subroutine3
+    104          
+    105             while (cnt--)
+    106             {
+    107                wait_20_ms ();
+    108             }
+    109          }
+    110          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    111          void wait_1_s (void)
+   \                     wait_1_s:
+    112          {
+   \   00000000   938A               ST      -Y, R24
+    113             u08 cnt = 50;
+   \   00000002   E382               LDI     R24, 50
+   \   00000004                      REQUIRE ?Subroutine3
+   \   00000004                      ;               // Fall through to label ?Subroutine3
+    114          
+    115             while (cnt--)
+    116             {
+    117                wait_20_ms ();
+    118             }
+    119          }
+    120          //========================================================================
+    121          
+    122          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    123          void proc_sens_pwr (u08 a)
+   \                     proc_sens_pwr:
+    124          {
+    125             if chk_sens_pwr_on
+   \   00000000   9B82               SBIS    0x10, 0x02
+   \   00000002   C008               RJMP    ??proc_sens_pwr_0
+    126             {
+    127                __disable_interrupt ();
+   \   00000004   94F8               CLI
+    128          
+    129                   switch (a)
+   \   00000006   3001               CPI     R16, 1
+   \   00000008   F421               BRNE    ??proc_sens_pwr_1
+    130                   {
+    131                      case NO_SAVE_EEPROM_PARAMETERS:
+    132                         break;
+    133          
+    134                      case SAVE_EEPROM_PARAMETERS:
+    135          //               _oe_disable ();
+    136          
+    137                         wdt_enable (WDTO_500_MS);
+   \   0000000A   E005               LDI     R16, 5
+   \   0000000C   ....               RCALL   wdt_enable
+    138          
+    139          //               save_parameters_eeprom ();
+    140          
+    141                         wdt_enable (WDTO_15_MS);
+   \   0000000E   E000               LDI     R16, 0
+   \   00000010   ....               RCALL   wdt_enable
+    142                         break;
+    143          
+    144                      default:
+    145                         break;
+    146                   }
+    147          
+    148                   while (1) {};
+   \                     ??proc_sens_pwr_1:
+   \   00000012   CFFF               RJMP    ??proc_sens_pwr_1
+    149             }
+    150          }
+   \                     ??proc_sens_pwr_0:
+   \   00000014   9508               RET
+   \   00000016                      REQUIRE _A_PIND
+    151          //========================================================================
+    152          
+    153          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    154          extern void sram_copy (u08 *s_1, u08 *s_2, u08 n)
+   \                     sram_copy:
+    155          {
+   \   00000000   C006               RJMP    ??sram_copy_0
+    156             while (n--)
+    157             {
+    158                *s_1++ = *s_2++;
+   \                     ??sram_copy_1:
+   \   00000002   01F9               MOVW    R31:R30, R19:R18
+   \   00000004   9151               LD      R21, Z+
+   \   00000006   019F               MOVW    R19:R18, R31:R30
+   \   00000008   01F8               MOVW    R31:R30, R17:R16
+   \   0000000A   9351               ST      Z+, R21
+   \   0000000C   018F               MOVW    R17:R16, R31:R30
+    159             }
+   \                     ??sram_copy_0:
+   \   0000000E   2F54               MOV     R21, R20
+   \   00000010   954A               DEC     R20
+   \   00000012   2355               TST     R21
+   \   00000014   F7B1               BRNE    ??sram_copy_1
+    160          }
+   \   00000016   9508               RET
+    161          //========================================================================
+    162          
+    163          //========================================================================
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+    164          u08 events;
+   \                     events:
+   \   00000000                      DS8 1
+    165          //------------------------------------------------------------------------
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    166          void set_event (u08 a)
+   \                     set_event:
+    167          {
+    168             events = a;
+   \   00000000   9300....           STS     events, R16
+    169          }
+   \   00000004   9508               RET
+    170          //========================================================================
+    171          
+    172          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    173          void proc_fsm_1 (u08 *ptr_state, void __flash *ptr_tab_fsm)
+   \                     proc_fsm_1:
+    174          {
+   \   00000000   93BA               ST      -Y, R27
+   \   00000002   93AA               ST      -Y, R26
+    175             void (*ptr_func) (void);
+    176          
+    177             ptr_func = EMPTY_FUNC;
+    178          
+    179             struct tab_state_func __flash *ptr = ptr_tab_fsm;
+   \   00000004   01F9               MOVW    R31:R30, R19:R18
+   \   00000006   C001               RJMP    ??proc_fsm_1_0
+    180          
+    181             for (; ptr -> state != 0xFF; ptr++)
+   \                     ??proc_fsm_1_1:
+   \   00000008   9633               ADIW    R31:R30, 3
+   \                     ??proc_fsm_1_0:
+   \   0000000A   9124               LPM     R18, Z
+   \   0000000C   3F2F               CPI     R18, 255
+   \   0000000E   F031               BREQ    ??CrossCallReturnLabel_0
+    182             {
+    183                if (ptr -> state == *ptr_state)
+   \   00000010   01D8               MOVW    R27:R26, R17:R16
+   \   00000012   913C               LD      R19, X
+   \   00000014   1723               CP      R18, R19
+   \   00000016   F7C1               BRNE    ??proc_fsm_1_1
+    184                   {
+    185                      ptr_func = ptr -> ptr_func;
+   \   00000018   9631               ADIW    R31:R30, 1
+   \   0000001A   ....               RCALL   ?Subroutine0
+    186                      break;
+    187                   }
+    188             }
+    189             if ((ptr_func)) (*ptr_func) ();
+    190          }
+   \                     ??CrossCallReturnLabel_0:
+   \   0000001C                      REQUIRE ?Subroutine4
+   \   0000001C                      ;               // Fall through to label ?Subroutine4
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine4:
+   \   00000000   91A9               LD      R26, Y+
+   \   00000002   91B9               LD      R27, Y+
+   \   00000004   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine0:
+   \   00000000   9125               LPM     R18, Z+
+   \   00000002   9134               LPM     R19, Z
+   \   00000004   E000               LDI     R16, LOW(0)
+   \   00000006   3020               CPI     R18, 0
+   \   00000008   0730               CPC     R19, R16
+   \   0000000A   F011               BREQ    ??Subroutine0_0
+   \   0000000C   01F9               MOVW    R31:R30, R19:R18
+   \   0000000E   9509               ICALL
+   \                     ??Subroutine0_0:
+   \   00000010   9508               RET
+    191          //========================================================================
+    192          
+    193          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    194          bool define_key_cod_1 (u08 *ptr_key_curr, u08 *ptr_key_buf, void __flash *ptr_tab_key_cod) // Функция определения кода нажатой кнопки.
+   \                     define_key_cod_1:
+    195          {
+   \   00000000   01BD               MOVW    R23:R22, R27:R26
+    196             struct tab_key_cod __flash *ptr = ptr_tab_key_cod;
+   \   00000002   01FA               MOVW    R31:R30, R21:R20
+   \   00000004   C001               RJMP    ??define_key_cod_1_0
+    197          
+    198             // Если конец таблицы, то выход.
+    199             for (; ptr -> key != 0xFF; ptr++)
+   \                     ??define_key_cod_1_1:
+   \   00000006   9632               ADIW    R31:R30, 2
+   \                     ??define_key_cod_1_0:
+   \   00000008   9144               LPM     R20, Z
+   \   0000000A   3F4F               CPI     R20, 255
+   \   0000000C   F051               BREQ    ??define_key_cod_1_2
+    200             {
+    201                // Если маска нажатой кнопки соответствует
+    202                //значению из таблицы, то считываем код кнопки и записываем его в keys_buf.
+    203                if (ptr -> key == *ptr_key_curr)
+   \   0000000E   01D8               MOVW    R27:R26, R17:R16
+   \   00000010   915C               LD      R21, X
+   \   00000012   1745               CP      R20, R21
+   \   00000014   F7C1               BRNE    ??define_key_cod_1_1
+    204                {
+    205                   *ptr_key_buf = ptr -> key_cod;
+   \   00000016   9631               ADIW    R31:R30, 1
+   \   00000018   9104               LPM     R16, Z
+   \   0000001A   01F9               MOVW    R31:R30, R19:R18
+   \   0000001C   8300               ST      Z, R16
+    206                   return true;
+   \   0000001E   E001               LDI     R16, 1
+   \   00000020   C001               RJMP    ??define_key_cod_1_3
+    207                }
+    208             }
+    209             return false;
+   \                     ??define_key_cod_1_2:
+   \   00000022   E000               LDI     R16, 0
+   \                     ??define_key_cod_1_3:
+   \   00000024   01DB               MOVW    R27:R26, R23:R22
+   \   00000026   9508               RET
+    210          }
+    211          //========================================================================
+    212          
+    213          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    214          void check_keys_buf_1 (u08 *ptr_keys_buf, u08 *state, void __flash *ptr_key_func)
+   \                     check_keys_buf_1:
+    215          {
+   \   00000000   93BA               ST      -Y, R27
+   \   00000002   93AA               ST      -Y, R26
+    216             if (*ptr_keys_buf != 0xFF)
+   \   00000004   01F8               MOVW    R31:R30, R17:R16
+   \   00000006   8160               LD      R22, Z
+   \   00000008   3F6F               CPI     R22, 255
+   \   0000000A   F0B9               BREQ    ??CrossCallReturnLabel_1
+    217             {
+    218                void (*ptr_func) (void);
+    219          
+    220                ptr_func = EMPTY_FUNC;
+    221          
+    222                struct tab_key_curr_next_func __flash *ptr = ptr_key_func;
+   \   0000000C   01FA               MOVW    R31:R30, R21:R20
+   \   0000000E   C001               RJMP    ??check_keys_buf_1_0
+    223          
+    224                for (; ptr -> key_cod != 0xFF; ptr++)
+   \                     ??check_keys_buf_1_1:
+   \   00000010   9635               ADIW    R31:R30, 5
+   \                     ??check_keys_buf_1_0:
+   \   00000012   9144               LPM     R20, Z
+   \   00000014   3F4F               CPI     R20, 255
+   \   00000016   F089               BREQ    ??CrossCallReturnLabel_1
+    225                {
+    226                   if (ptr -> key_cod == *ptr_keys_buf && ptr -> curr_state == *state)
+   \   00000018   1746               CP      R20, R22
+   \   0000001A   F7D1               BRNE    ??check_keys_buf_1_1
+   \   0000001C   9631               ADIW    R31:R30, 1
+   \   0000001E   9144               LPM     R20, Z
+   \   00000020   9731               SBIW    R31:R30, 1
+   \   00000022   01D9               MOVW    R27:R26, R19:R18
+   \   00000024   915C               LD      R21, X
+   \   00000026   1745               CP      R20, R21
+   \   00000028   F799               BRNE    ??check_keys_buf_1_1
+    227                      {
+    228                         *ptr_keys_buf = 0xFF;
+   \   0000002A   EF4F               LDI     R20, 255
+   \   0000002C   01D8               MOVW    R27:R26, R17:R16
+   \   0000002E   934C               ST      X, R20
+    229                         *state = ptr -> next_state;
+   \   00000030   9632               ADIW    R31:R30, 2
+   \   00000032   9105               LPM     R16, Z+
+   \   00000034   01D9               MOVW    R27:R26, R19:R18
+   \   00000036   930C               ST      X, R16
+    230                         ptr_func = ptr -> ptr_func;
+   \   00000038   ....               RCALL   ?Subroutine0
+    231                         break;
+    232                      }
+    233                }
+    234                if ((ptr_func)) (*ptr_func) ();
+    235             }
+    236          }
+   \                     ??CrossCallReturnLabel_1:
+   \   0000003A   ....               RJMP    ?Subroutine4
+    237          //========================================================================
+
+   Maximum stack usage in bytes:
+
+   CSTACK RSTACK Function
+   ------ ------ --------
+       2      2  check_keys_buf_1
+                   2 2 -- Indirect call
+       0      2  define_key_cod_1
+       0      2  empty_func
+       0      2  ext_int0_init
+       2      2  proc_fsm_1
+                   2 2 -- Indirect call
+       0      2  proc_sens_pwr
+                   0 2 -> wdt_enable
+       0      2  set_event
+       0      2  sleep_mode_enable
+       0      2  sleep_mode_init
+       0      2  sram_copy
+       1      2  wait_1_s
+                   1 2 -> wait_20_ms
+       1      2  wait_200_ms
+                   1 2 -> wait_20_ms
+       1      2  wait_20_ms
+                   1 2 -> wait_5_ms
+       1      2  wait_500_ms
+                   1 2 -> wait_20_ms
+       0      2  wait_50_us
+       0      2  wait_5_ms
+       0      2  wdt_disable
+       0      2  wdt_enable
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??Subroutine6_0
+      18  ?Subroutine0
+       8  ?Subroutine1
+       2  ?Subroutine2
+       8  ?Subroutine3
+       6  ?Subroutine4
+       4  ?Subroutine5
+       1  _A_GICR
+       1  _A_MCUCR
+       1  _A_PIND
+       1  _A_WDTCR
+      60  check_keys_buf_1
+      40  define_key_cod_1
+       2  empty_func
+       1  events
+      14  ext_int0_init
+      28  proc_fsm_1
+      22  proc_sens_pwr
+       6  set_event
+       6  sleep_mode_enable
+       8  sleep_mode_init
+      24  sram_copy
+       4  wait_1_s
+       6  wait_200_ms
+      14  wait_20_ms
+       6  wait_500_ms
+      28  wait_50_us
+      32  wait_5_ms
+      12  wdt_disable
+       4  wdt_enable
+       6  -- Other
+
+ 
+   4 bytes in segment ABSOLUTE
+ 366 bytes in segment CODE
+   6 bytes in segment INITTAB
+   1 byte  in segment NEAR_Z
+ 
+ 366 bytes of CODE memory (+ 6 bytes shared)
+   1 byte  of DATA memory (+ 4 bytes shared)
+
+Errors: none
+Warnings: none

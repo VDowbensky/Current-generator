@@ -1,0 +1,23 @@
+;	STMicroelectronics dependencies file
+
+[Version]
+Keyword=ST7Project
+Number=1.3
+
+[Root.Source Files.main.c.Config.0]
+ExternDep=main.c "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151K6.h" "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151.h" "C:\Program Files (x86)\Raisonance\Ride\inc\intrins.h" "C:\Program Files (x86)\Raisonance\Ride\inc\ST7\INTRIST7.h" d:\Projects\Myself\curgen\soft\global.h "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151K6.h" "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151.h" "C:\Program Files (x86)\Raisonance\Ride\inc\intrins.h" d:\Projects\Myself\curgen\soft\timers.h d:\Projects\Myself\curgen\soft\global.h d:\Projects\Myself\curgen\soft\gpio.h d:\Projects\Myself\curgen\soft\global.h d:\Projects\Myself\curgen\soft\ecma0896.h d:\Projects\Myself\curgen\soft\global.h d:\Projects\Myself\curgen\soft\dac.h d:\Projects\Myself\curgen\soft\global.h 
+
+[Root.dac.c.Config.0]
+ExternDep=dac.c d:\Projects\Myself\curgen\soft\dac.h d:\Projects\Myself\curgen\soft\global.h "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151K6.h" "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151.h" "C:\Program Files (x86)\Raisonance\Ride\inc\intrins.h" "C:\Program Files (x86)\Raisonance\Ride\inc\ST7\INTRIST7.h" d:\Projects\Myself\curgen\soft\timers.h d:\Projects\Myself\curgen\soft\global.h 
+
+[Root.ecma0896.c.Config.0]
+ExternDep=ecma0896.c d:\Projects\Myself\curgen\soft\ecma0896.h d:\Projects\Myself\curgen\soft\global.h "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151K6.h" "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151.h" "C:\Program Files (x86)\Raisonance\Ride\inc\intrins.h" "C:\Program Files (x86)\Raisonance\Ride\inc\ST7\INTRIST7.h" d:\Projects\Myself\curgen\soft\gpio.h d:\Projects\Myself\curgen\soft\global.h 
+
+[Root.eeprom.c.Config.0]
+ExternDep=eeprom.c d:\Projects\Myself\curgen\soft\eeprom.h d:\Projects\Myself\curgen\soft\global.h "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151K6.h" "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151.h" "C:\Program Files (x86)\Raisonance\Ride\inc\intrins.h" "C:\Program Files (x86)\Raisonance\Ride\inc\ST7\INTRIST7.h" d:\Projects\Myself\curgen\soft\dac.h d:\Projects\Myself\curgen\soft\global.h d:\Projects\Myself\curgen\soft\ecma0896.h d:\Projects\Myself\curgen\soft\global.h 
+
+[Root.gpio.c.Config.0]
+ExternDep=gpio.c d:\Projects\Myself\curgen\soft\gpio.h d:\Projects\Myself\curgen\soft\global.h "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151K6.h" "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151.h" "C:\Program Files (x86)\Raisonance\Ride\inc\intrins.h" "C:\Program Files (x86)\Raisonance\Ride\inc\ST7\INTRIST7.h" 
+
+[Root.timers.c.Config.0]
+ExternDep=timers.c d:\Projects\Myself\curgen\soft\timers.h d:\Projects\Myself\curgen\soft\global.h "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151K6.h" "C:\Program Files (x86)\Raisonance\Ride\inc\STM8\STM8L151.h" "C:\Program Files (x86)\Raisonance\Ride\inc\intrins.h" "C:\Program Files (x86)\Raisonance\Ride\inc\ST7\INTRIST7.h" d:\Projects\Myself\curgen\soft\dac.h d:\Projects\Myself\curgen\soft\global.h 

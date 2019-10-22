@@ -1,0 +1,16 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [currgen.PrjPcb]
+   Generated File[currgenTPA_l_a.GTL]
+   Generated File[currgenTPA_l_a.GBL]
+   Generated File[currgenTPA_l_a.GD1]
+   Generated File[currgenTPA_l_a.GG1]
+   Generated File[currgenTPA_l_a.RUL]
+   Generated File[currgenTPA_l_a.EXTREP]
+   Generated File[currgenTPA_l_a.REP]
+
+
+Files Generated   : 7
+Documents Printed : 0
+
+Finished Output Generation At 16:46:59 On 28.11.2012

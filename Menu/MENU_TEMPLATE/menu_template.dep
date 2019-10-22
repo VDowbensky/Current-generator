@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<project>
+  <fileVersion>2</fileVersion>
+  <fileChecksum>4023774193</fileChecksum>
+  <configuration>
+    <name>Debug</name>
+    <outputs>
+      <file>$TOOLKIT_DIR$\lib\clib\cl3s-ec_mul-sf.r90</file>
+      <file>$PROJ_DIR$\Debug\List\kbd_drv.lst</file>
+      <file>$TOOLKIT_DIR$\inc\ioavr.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\tui_service.pbi</file>
+      <file>$PROJ_DIR$\kbd_drv.c</file>
+      <file>$PROJ_DIR$\bcd.c</file>
+      <file>$PROJ_DIR$\Debug\Obj\events.r90</file>
+      <file>$PROJ_DIR$\macros.h</file>
+      <file>$PROJ_DIR$\kbd_drv.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\menu_template.eep</file>
+      <file>$PROJ_DIR$\Debug\List\tui_service.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\kbd_drv.r90</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.pbi</file>
+      <file>$PROJ_DIR$\main_def_func.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\char_display.r90</file>
+      <file>$PROJ_DIR$\Debug\List\sys_timer.lst</file>
+      <file>$PROJ_DIR$\Debug\List\menu.lst</file>
+      <file>$PROJ_DIR$\Debug\List\main_def_func.lst</file>
+      <file>$PROJ_DIR$\avrlibtypes.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\bcd.r90</file>
+      <file>$PROJ_DIR$\typedef.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\events.pbi</file>
+      <file>$PROJ_DIR$\bcd.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\string.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\menu.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\iom32a.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\menu_template.dbg</file>
+      <file>$PROJ_DIR$\events.h</file>
+      <file>$TOOLKIT_DIR$\inc\clib\pgmspace.h</file>
+      <file>$PROJ_DIR$\Debug\List\bcd.lst</file>
+      <file>$PROJ_DIR$\Debug\List\events.lst</file>
+      <file>$PROJ_DIR$\proc_termoplast.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\sys_timer.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\sys_timer.r90</file>
+      <file>$PROJ_DIR$\Debug\List\proc_termoplast.lst</file>
+      <file>$PROJ_DIR$\_tui_service_main.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\bcd.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\char_display.lst</file>
+      <file>$PROJ_DIR$\Debug\Obj\main_def_func.r90</file>
+      <file>$TOOLKIT_DIR$\inc\bitdefinitions\iom32a.inc</file>
+      <file>$TOOLKIT_DIR$\inc\intrinsics.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\kbd_drv.pbi</file>
+      <file>$TOOLKIT_DIR$\inc\iomacro.h</file>
+      <file>$PROJ_DIR$\Debug\Exe\menu_template.hex</file>
+      <file>$PROJ_DIR$\Debug\Obj\proc_termoplast.r90</file>
+      <file>$PROJ_DIR$\Debug\Obj\tui_service.r90</file>
+      <file>$PROJ_DIR$\Debug\Obj\char_display.pbi</file>
+      <file>$PROJ_DIR$\Debug\List\main.lst</file>
+      <file>$TOOLKIT_DIR$\inc\clib\stdbool.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\menu.r90</file>
+      <file>$TOOLKIT_DIR$\inc\clib\sysmac.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\main.r90</file>
+      <file>$PROJ_DIR$\Debug\Obj\main_def_func.pbi</file>
+      <file>$PROJ_DIR$\Debug\Obj\menu_template.pbd</file>
+      <file>$PROJ_DIR$\menu.h</file>
+      <file>$PROJ_DIR$\char_display.h</file>
+      <file>$PROJ_DIR$\tui_service.h</file>
+      <file>$PROJ_DIR$\Debug\Obj\proc_termoplast.pbi</file>
+      <file>$PROJ_DIR$\events.c</file>
+      <file>$PROJ_DIR$\char_display.c</file>
+      <file>$PROJ_DIR$\main.c</file>
+      <file>$PROJ_DIR$\menu.c</file>
+      <file>$PROJ_DIR$\main_def_func.c</file>
+      <file>$PROJ_DIR$\sys_timer.c</file>
+      <file>$PROJ_DIR$\proc_termoplast.c</file>
+      <file>$TOOLKIT_DIR$\src\template\cfgm32a.xcl</file>
+      <file>$PROJ_DIR$\tui_service.c</file>
+      <file>$PROJ_DIR$\sys_timer.h</file>
+      <file>$TOOLKIT_DIR$\src\template\cfg3soim.xcl</file>
+    </outputs>
+    <file>
+      <name>[ROOT_NODE]</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 26 43 9</file>
+        </tool>
+      </outputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\kbd_drv.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 1 11</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 41</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 8 2 25 42 39 18 7 13 40 48 20 67 27 55 56 54 28 23 50 22 31 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\bcd.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 29 19</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 36</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 22 18 7</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 22 18 7</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Exe\menu_template.dbg</name>
+      <outputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 43 9</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>XLINK</name>
+          <file> 65 68 19 14 6 11 51 38 49 44 33 45 0</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\Debug\Obj\menu_template.pbd</name>
+      <inputs>
+        <tool>
+          <name>BILINK</name>
+          <file> 36 46 21 41 12 52 24 57 32 3</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\events.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 30 6</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 21</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 27 18 13 2 25 42 39 40 48 7 20 67 55 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 27 18 13 2 25 42 39 40 48 7 20 67 55 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\char_display.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 37 14</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 46</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 55 2 25 42 39 18 7 13 40 48 20 67 27 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 55 2 25 42 39 18 7 13 40 48 20 67 27 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\main.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 47 51</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 12</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 13 2 25 42 39 40 48 18 7 20 67 27 55 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 13 2 25 42 39 40 48 18 7 20 67 27 55 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\menu.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 16 49</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 24</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 54 28 23 50 48 18 8 2 25 42 39 7 13 40 20 67 27 55 56 22 31 35</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 54 28 23 50 48 18 8 2 25 42 39 7 13 40 20 67 27 55 56 22 31 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\main_def_func.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 17 38</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 52</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 13 2 25 42 39 40 48 18 7 20 67 27 55 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 13 2 25 42 39 40 48 18 7 20 67 27 55 56 54 28 23 50 8 22 31 35</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\sys_timer.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 15 33</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 32</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 67 2 25 42 39 18</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 67 2 25 42 39 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\proc_termoplast.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 34 44</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 57</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 31 18</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 31 18</file>
+        </tool>
+      </inputs>
+    </file>
+    <file>
+      <name>$PROJ_DIR$\tui_service.c</name>
+      <outputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 10 45</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 3</file>
+        </tool>
+      </outputs>
+      <inputs>
+        <tool>
+          <name>ICCAVR</name>
+          <file> 56 18 7 13 2 25 42 39 40 48 20 67 27 55 54 28 23 50 8 22 31 35</file>
+        </tool>
+        <tool>
+          <name>BICOMP</name>
+          <file> 56 18 7 13 2 25 42 39 40 48 20 67 27 55 54 28 23 50 8 22 31 35</file>
+        </tool>
+      </inputs>
+    </file>
+  </configuration>
+  <configuration>
+    <name>Release</name>
+    <outputs/>
+    <forcedrebuild>
+      <name>[MULTI_TOOL]</name>
+      <tool>XLINK</tool>
+    </forcedrebuild>
+  </configuration>
+</project>
+
+

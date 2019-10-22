@@ -1,0 +1,28 @@
+Field=Comment~String~Comment~100|Field=Description~String~Description~100|Field=Designator~String~Designator~100|Field=Footprint~String~Footprint~100|Field=LibRef~String~LibRef~100|Field=Quantity~Integer~Quantity~100|ReportField=Currency~<none>|ReportField=ProductionQuantity~1|ReportField=ProjectFileName~curgen.PrjPcb|ReportField=ProjectFullPath~D:\Projects\curgen\ad\curgen.PrjPcb|ReportField=Title~Bill of Materials For Project [curgen.PrjPcb] (No PCB Document Selected)|ReportField=TotalQuantity~53|ReportField=ReportTime~21:56:42|ReportField=ReportDate~12.09.2012|ReportField=ReportDateTime~12.09.2012 21:56:42|ReportField=OutputName~Bill of Materials|ReportField=OutputType~BOM_PartType|ReportField=GeneratorName~BOM|ReportField=GeneratorDescription~Bill of Materials|ReportField=VariantName~None|ReportField=Address1~|ReportField=Address2~|ReportField=Address3~|ReportField=Address4~|ReportField=ApprovedBy~|ReportField=Author~|ReportField=CheckedBy~|ReportField=CompanyName~|ReportField=CurrentDate~12.09.2012|ReportField=CurrentTime~21:56:40|ReportField=Date~|ReportField=DocumentFullPathAndName~D:\Projects\curgen\ad\curgen.SchDoc|ReportField=DocumentName~curgen.SchDoc|ReportField=DocumentNumber~|ReportField=DrawnBy~|ReportField=Engineer~|ReportField=ImagePath~|ReportField=ModifiedDate~27.08.2012|ReportField=Organization~|ReportField=ProjectName~curgen.PrjPcb|ReportField=Revision~|ReportField=Rule~|ReportField=SheetNumber~|ReportField=SheetTotal~|ReportField=Time~|ReportField=Title~|ReportField=DataSourceFileName~curgen.PrjPcb|ReportField=DataSourceFullPath~D:\Projects\curgen\ad\curgen.PrjPcb
+470p||C1|C-0805|C|1
+100n||C2, C3, C5, C6, C9, C16|C-0805|C|6
+100u*25V||C4|EXR-6.3X11|C-EL-DIP|1
+330n||C7, C8|C-0805|C|2
+22u||C10, C11|TANTAL-A|C-EL-TAN|2
+3u3||C12, C13, C17, C19|C-1206|C|4
+1n||C14|C-0805|C|1
+4700u*25V||C15, C18|EXR-10X12.5|C-EL-DIP|2
+LL4148||D1, D2|SOD-80|DIODE|2
+Header 7|Header, 7-Pin|JP1|HDR1X7|Header 7|1
+Header 2|Header, 2-Pin|JP2, JP3|KLEMMA2|Header 2|2
+L*||L1|ETD34|L*|1
+IRF5802||Q1, Q2|SOT-23L-6|MOSFET N SOT23-6|2
+IRF7842||Q3, Q4, Q5, Q6|SO8-(SOT-96-1)|IRF7842|4
+20k||R1|R-0805|R|1
+22k*||R2|R-0805|R|1
+15k||R3, R4, R8|R-0805|R|3
+0||R5, R6, R11, R13, R14, R15, R16|R-0805|R|7
+100k||R7, R9|R-0805|R|2
+47k||R10|R-0805|R|1
+3k3||R12|R-0805|R|1
+74AHC14|Hex Inverter With Schmitt Trigger|U1|SSOP14|74AHC14|1
+TS951ILT|RAIL TO RAIL single BiCMOS|U2|SOT-23-5|TS951ILT|1
+HIP4081AIB||U3|SO20-(SOT-163-1)|HIP4081AIB|1
+LD1117-33||U4|SOT-223-(SC-73)|LD1117|1
+LP2982-5.0|50mA Ultra Low-Dropout Regulator|U5|SOT-23-5|LP2982|1
+ACS712||U6|SO8-(SOT-96-1)|ACS712|1

@@ -1,0 +1,910 @@
+###############################################################################
+#                                                                             #
+# IAR C/C++ Compiler V6.12.1.50500 for Atmel AVR        11/Feb/2015  02:09:28 #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Source file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\menu.c        #
+#    Command line =  --string_literals_in_flash G:\Work\Projects\ATMEL\IAR\C\ #
+#                    MENU_TEMPLATE\menu.c --cpu=m32a -ms -o                   #
+#                    G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\    #
+#                    -lCN G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Li #
+#                    st\ --initializers_in_flash --debug                      #
+#                    -DENABLE_BIT_DEFINITIONS -e --eeprom_size 1024 --clib    #
+#                    -Ohz                                                     #
+#    List file    =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\List\me #
+#                    nu.lst                                                   #
+#    Object file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\men #
+#                    u.r90                                                    #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\menu.c
+      1          //========================================================================
+      2          #include "menu.h"
+      3          //========================================================================
+      4          
+      5          //========================================================================
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+      6          static u08 quant_items;
+      7          static u08 pos_y_curs;
+      8          //========================================================================
+      9          
+     10          //==============================================================================================================================================
+     11          menu_item __flash *CurrMenuItem; // Текущий пункт меню.
+   \                     CurrMenuItem:
+   \   00000000                      DS8 2
+     12          
+     13          menu_item __flash *BeginCurrMenuLevel; // Начало массива текущего уровня меню.
+   \                     BeginCurrMenuLevel:
+   \   00000002                      DS8 2
+     14          
+     15          menu_item __flash *temp_menu;
+   \                     temp_menu:
+   \   00000004                      DS8 2
+   \   00000006                      DS8 1
+   \   00000007                      DS8 1
+     16          
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+     17          menu_item __flash  Null_Menu = {(void*)0, (void*)0, (void*)0, (void*)0, NULL_FUNC, NULL_FUNC, NULL_FUNC, {NULL_TEXT}};
+   \                     Null_Menu:
+   \   00000000   000000000000       DC16 0H, 0H, 0H, 0H, 0H, 0H, 0H, 0H
+   \              000000000000
+   \              00000000    
+     18          
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+     19          void (*MenuFuncPtr)(void);
+   \                     MenuFuncPtr:
+   \   00000000                      DS8 2
+     20          //==============================================================================================================================================
+     21          
+     22          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     23          void Set_Menu_Level (menu_item __flash *NewMenu)
+   \                     Set_Menu_Level:
+     24          {
+   \   00000000   ....               RCALL   ?Subroutine3
+     25             if ((void*)NewMenu == (void*)&NULL_ENTRY)
+   \                     ??CrossCallReturnLabel_2:
+   \   00000002   F019               BREQ    ??CrossCallReturnLabel_1
+     26                return;
+     27          
+     28             CurrMenuItem = NewMenu;
+   \   00000004   ....               RCALL   ?Subroutine4
+     29          
+     30             Out_Menu_Items_Init (); // Так как новый уровень, инициализация переменных.
+   \                     ??CrossCallReturnLabel_4:
+   \   00000006   ....               RCALL   Out_Menu_Items_Init
+     31             Out_Menu_Items (); // Вывод названия уровня меню и пунктов меню, курсора.
+   \   00000008   ....               RCALL   ?Subroutine1
+     32          
+     33             GO_MENU_FUNC (ENTER_FUNC);
+     34          }
+   \                     ??CrossCallReturnLabel_1:
+   \   0000000A                      REQUIRE ?Subroutine9
+   \   0000000A                      ;               // Fall through to label ?Subroutine9
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine9:
+   \   00000000   91A9               LD      R26, Y+
+   \   00000002   91B9               LD      R27, Y+
+   \   00000004   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine4:
+   \   00000000   ....               LDI     R30, LOW(CurrMenuItem)
+   \   00000002   ....               LDI     R31, (CurrMenuItem) >> 8
+   \   00000004   8300               ST      Z, R16
+   \   00000006   8311               STD     Z+1, R17
+   \   00000008   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine3:
+   \   00000000   93BA               ST      -Y, R27
+   \   00000002   93AA               ST      -Y, R26
+   \   00000004   ....               LDI     R19, (Null_Menu) >> 8
+   \   00000006   ....               CPI     R16, LOW(Null_Menu)
+   \   00000008   0713               CPC     R17, R19
+   \   0000000A   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine1:
+   \   00000000   ....               RCALL   Out_Menu_Items
+   \   00000002   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_22:
+   \   00000004   963A               ADIW    R31:R30, 10
+   \   00000006   9105               LPM     R16, Z+
+   \   00000008   9114               LPM     R17, Z
+   \   0000000A   ....               RJMP    MenuFunc
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine8:
+   \   00000000   ....               LDI     R26, LOW(CurrMenuItem)
+   \   00000002   ....               LDI     R27, (CurrMenuItem) >> 8
+   \   00000004   91ED               LD      R30, X+
+   \   00000006   91FC               LD      R31, X
+   \   00000008   9508               RET
+     35          //========================================================================
+     36          
+     37          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     38          void Set_Menu_Item (menu_item __flash *NewMenu)
+   \                     Set_Menu_Item:
+     39          {
+   \   00000000   ....               RCALL   ?Subroutine3
+     40             if ((void*)NewMenu == (void*)&NULL_ENTRY)
+   \                     ??CrossCallReturnLabel_3:
+   \   00000002   F011               BREQ    ??CrossCallReturnLabel_0
+     41                return;
+     42          
+     43             CurrMenuItem = NewMenu;
+   \   00000004   ....               RCALL   ?Subroutine4
+     44          
+     45             Out_Menu_Items (); // Вывод названия уровня меню и пунктов меню, курсора.
+   \                     ??CrossCallReturnLabel_5:
+   \   00000006   ....               RCALL   ?Subroutine1
+     46          
+     47             GO_MENU_FUNC (ENTER_FUNC);
+     48          }
+   \                     ??CrossCallReturnLabel_0:
+   \   00000008   ....               RJMP    ?Subroutine9
+     49          //========================================================================
+     50          
+     51          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     52          void MenuFunc (FuncPtr* Function)
+   \                     MenuFunc:
+     53          {
+     54             if ((void*) Function == (void*) NULL_FUNC)
+   \   00000000   2F20               MOV     R18, R16
+   \   00000002   2B21               OR      R18, R17
+   \   00000004   F011               BREQ    ??MenuFunc_0
+     55                return;
+     56          
+     57             ((FuncPtr) Function)();
+   \   00000006   01F8               MOVW    R31:R30, R17:R16
+   \   00000008   9509               ICALL
+     58          }
+   \                     ??MenuFunc_0:
+   \   0000000A   9508               RET
+     59          //========================================================================
+     60          
+     61          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     62          bool proc_menu_keys (void)
+   \                     proc_menu_keys:
+     63          {
+   \   00000000   93BA               ST      -Y, R27
+   \   00000002   93AA               ST      -Y, R26
+     64             bool a = false;
+     65             u08 key;
+     66          
+     67             if (Get_Event (EV_ID_KEY_PRESSED))
+   \   00000004   E000               LDI     R16, 0
+   \   00000006   ........           CALL    Get_Event
+   \   0000000A   2300               TST     R16
+   \   0000000C   F121               BREQ    ??proc_menu_keys_0
+     68             {
+     69                key = GetKeyCode ();
+   \   0000000E   ........           CALL    GetKeyCode
+     70          
+     71                switch (key)
+   \   00000012   2F10               MOV     R17, R16
+   \   00000014   501A               SUBI    R17, 10
+   \   00000016   F039               BREQ    ??proc_menu_keys_1
+   \   00000018   951A               DEC     R17
+   \   0000001A   F039               BREQ    ??proc_menu_keys_2
+   \   0000001C   951A               DEC     R17
+   \   0000001E   F071               BREQ    ??proc_menu_keys_3
+   \   00000020   951A               DEC     R17
+   \   00000022   F041               BREQ    ??proc_menu_keys_4
+   \   00000024   C011               RJMP    ??proc_menu_keys_5
+     72                {
+     73                   case KEY_ESC_COD:
+     74                      SET_MENU_LEVEL (PARENT);
+   \                     ??proc_menu_keys_1:
+   \   00000026   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_16:
+   \   00000028   C002               RJMP    ??proc_menu_keys_6
+     75                      a = true;
+     76                      break;
+     77          
+     78                   case KEY_ENTER_COD:
+     79                      SET_MENU_LEVEL (CHILD);
+   \                     ??proc_menu_keys_2:
+   \   0000002A   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_17:
+   \   0000002C   9632               ADIW    R31:R30, 2
+   \                     ??proc_menu_keys_6:
+   \   0000002E   ....               RCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_6:
+   \   00000030   ....               RCALL   Set_Menu_Level
+     80                      a = true;
+     81                      break;
+   \   00000032   C00F               RJMP    ??proc_menu_keys_7
+     82          
+     83                   case KEY_NEXT_COD:
+     84                      inc_pos_y_curs ();
+   \                     ??proc_menu_keys_4:
+   \   00000034   ....               RCALL   inc_pos_y_curs
+     85                      SET_MENU_ITEM (NEXT);
+   \   00000036   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_18:
+   \   00000038   9634               ADIW    R31:R30, 4
+   \   0000003A   C003               RJMP    ??proc_menu_keys_8
+     86                      a = true;
+     87                      break;
+     88          
+     89                   case KEY_PREV_COD:
+     90                      dec_pos_y_curs ();
+   \                     ??proc_menu_keys_3:
+   \   0000003C   ....               RCALL   dec_pos_y_curs
+     91                      SET_MENU_ITEM (PREV);
+   \   0000003E   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_19:
+   \   00000040   9636               ADIW    R31:R30, 6
+   \                     ??proc_menu_keys_8:
+   \   00000042   ....               RCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_7:
+   \   00000044   ....               RCALL   Set_Menu_Item
+     92                      a = true;
+     93                      break;
+   \   00000046   C005               RJMP    ??proc_menu_keys_7
+     94          
+     95                   default:
+     96                      break;
+     97                }
+     98          
+     99                if (key < 10)
+   \                     ??proc_menu_keys_5:
+   \   00000048   F430               BRCC    ??proc_menu_keys_0
+    100                {
+    101                   GO_MENU_FUNC (NUM_FUNC); // Сервисные меню. Ввод числовых параметров.
+   \   0000004A   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_20:
+   \   0000004C   9638               ADIW    R31:R30, 8
+   \   0000004E   ....               RCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_8:
+   \   00000050   ....               RCALL   MenuFunc
+    102                   a = true;
+    103                }
+    104             }
+    105          
+    106             if (a) return true;
+   \                     ??proc_menu_keys_7:
+   \   00000052   E001               LDI     R16, 1
+   \   00000054   C001               RJMP    ??proc_menu_keys_9
+    107             else   return false;
+   \                     ??proc_menu_keys_0:
+   \   00000056   E000               LDI     R16, 0
+   \                     ??proc_menu_keys_9:
+   \   00000058   ....               RJMP    ?Subroutine9
+    108          }
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine5:
+   \   00000000   9105               LPM     R16, Z+
+   \   00000002   9114               LPM     R17, Z
+   \   00000004   9508               RET
+    109          //========================================================================
+    110          
+    111          /*
+    112          Уровни, пункты, текст - все выводится автоматом.
+    113          Так как все переходы по меню расписаны в структуре, то отпадает надобность в запоминании перемещений по меню.
+    114          */
+    115          
+    116          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    117          void Out_Menu_Items_Init (void)
+   \                     Out_Menu_Items_Init:
+    118          {
+   \   00000000   01BD               MOVW    R23:R22, R27:R26
+    119             quant_items = 1;
+   \   00000002   ....               LDI     R26, LOW(CurrMenuItem)
+   \   00000004   ....               LDI     R27, (CurrMenuItem) >> 8
+   \   00000006   E001               LDI     R16, 1
+   \   00000008   9300....           STS     (CurrMenuItem + 6), R16
+    120             pos_y_curs = 1;
+   \   0000000C   9300....           STS     (CurrMenuItem + 7), R16
+    121          
+    122          // Получение адреса начала массива уровня меню.
+    123             BeginCurrMenuLevel = CurrMenuItem;
+   \   00000010   910D               LD      R16, X+
+   \   00000012   911C               LD      R17, X
+   \   00000014   9711               SBIW    R27:R26, 1
+   \   00000016   01FD               MOVW    R31:R30, R27:R26
+   \   00000018   8302               STD     Z+2, R16
+   \   0000001A   8313               STD     Z+3, R17
+    124             temp_menu = (menu_item __flash *)(CurrMenuItem->Prev);
+   \   0000001C   91ED               LD      R30, X+
+   \   0000001E   2FF1               MOV     R31, R17
+   \   00000020   9711               SBIW    R27:R26, 1
+   \   00000022   C004               RJMP    ??Out_Menu_Items_Init_0
+    125          
+    126             while (1)
+    127             {
+    128                if ((void*)temp_menu == (void*)&NULL_ENTRY)
+    129                {
+    130                   break;
+    131                }
+    132                else
+    133                {
+    134                   BeginCurrMenuLevel = temp_menu;
+   \                     ??Out_Menu_Items_Init_1:
+   \   00000024   9612               ADIW    R27:R26, 2
+   \   00000026   93ED               ST      X+, R30
+   \   00000028   93FC               ST      X, R31
+   \   0000002A   9713               SBIW    R27:R26, 3
+    135                   temp_menu = (menu_item __flash *)(temp_menu->Prev);
+   \                     ??Out_Menu_Items_Init_0:
+   \   0000002C   9636               ADIW    R31:R30, 6
+    136                }
+   \   0000002E   ....               RCALL   ??Subroutine12_0
+   \                     ??CrossCallReturnLabel_23:
+   \   00000030   9614               ADIW    R27:R26, 4
+   \   00000032   91ED               LD      R30, X+
+   \   00000034   91FC               LD      R31, X
+   \   00000036   9715               SBIW    R27:R26, 5
+   \   00000038   ....               LDI     R17, (Null_Menu) >> 8
+   \   0000003A   ....               CPI     R30, LOW(Null_Menu)
+   \   0000003C   07F1               CPC     R31, R17
+   \   0000003E   F791               BRNE    ??Out_Menu_Items_Init_1
+    137             }
+    138          
+    139          // Получение количества пунктов меню.
+    140             temp_menu = (menu_item __flash *)(BeginCurrMenuLevel->Next);
+   \   00000040   01FD               MOVW    R31:R30, R27:R26
+   \   00000042   8142               LDD     R20, Z+2
+   \   00000044   8153               LDD     R21, Z+3
+   \   00000046   01FA               MOVW    R31:R30, R21:R20
+   \   00000048   ....               RCALL   ??Subroutine11_0
+   \                     ??CrossCallReturnLabel_24:
+   \   0000004A   ....               LDI     R19, (Null_Menu) >> 8
+   \   0000004C   C004               RJMP    ??Out_Menu_Items_Init_2
+    141          
+    142             while (1)
+    143             {
+    144                if ((void*)temp_menu == (void*)&NULL_ENTRY)
+    145                {
+    146                   break;
+    147                }
+    148          
+    149                temp_menu = (menu_item __flash *)(temp_menu->Next);
+   \                     ??Out_Menu_Items_Init_3:
+   \   0000004E   ....               RCALL   ?Subroutine0
+    150                quant_items++;
+   \                     ??CrossCallReturnLabel_26:
+   \   00000050   8106               LDD     R16, Z+6
+   \   00000052   9503               INC     R16
+   \   00000054   8306               STD     Z+6, R16
+   \                     ??Out_Menu_Items_Init_2:
+   \   00000056   8104               LDD     R16, Z+4
+   \   00000058   8115               LDD     R17, Z+5
+   \   0000005A   ....               CPI     R16, LOW(Null_Menu)
+   \   0000005C   0713               CPC     R17, R19
+   \   0000005E   F7B9               BRNE    ??Out_Menu_Items_Init_3
+    151             }
+    152          
+    153          // Позиция курсора.
+    154             if (quant_items > 1)
+   \   00000060   8106               LDD     R16, Z+6
+   \   00000062   3002               CPI     R16, 2
+   \   00000064   F098               BRCS    ??Out_Menu_Items_Init_4
+    155             {
+    156                temp_menu = BeginCurrMenuLevel;
+   \   00000066   8344               STD     Z+4, R20
+   \   00000068   8355               STD     Z+5, R21
+   \   0000006A   C004               RJMP    ??CrossCallReturnLabel_27
+    157          
+    158                while (1)
+    159                {
+    160                   if ((void*)temp_menu == (void*)&NULL_ENTRY)
+    161                      return;
+    162          
+    163                   if (temp_menu == CurrMenuItem)
+    164                      return;
+    165                   else
+    166                      pos_y_curs++;
+   \                     ??Out_Menu_Items_Init_5:
+   \   0000006C   8127               LDD     R18, Z+7
+   \   0000006E   9523               INC     R18
+   \   00000070   8327               STD     Z+7, R18
+    167          
+    168                   temp_menu = (menu_item __flash *)(temp_menu->Next);
+   \   00000072   ....               RCALL   ?Subroutine0
+   \                     ??CrossCallReturnLabel_27:
+   \   00000074   8104               LDD     R16, Z+4
+   \   00000076   8115               LDD     R17, Z+5
+   \   00000078   ....               LDI     R19, (Null_Menu) >> 8
+   \   0000007A   ....               CPI     R16, LOW(Null_Menu)
+   \   0000007C   0713               CPC     R17, R19
+   \   0000007E   F031               BREQ    ??Out_Menu_Items_Init_4
+   \   00000080   912D               LD      R18, X+
+   \   00000082   913C               LD      R19, X
+   \   00000084   9711               SBIW    R27:R26, 1
+   \   00000086   1702               CP      R16, R18
+   \   00000088   0713               CPC     R17, R19
+   \   0000008A   F781               BRNE    ??Out_Menu_Items_Init_5
+   \                     ??Out_Menu_Items_Init_4:
+   \   0000008C   01DB               MOVW    R27:R26, R23:R22
+   \   0000008E   9508               RET
+    169                }
+    170             }
+    171          }
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine0:
+   \   00000000   01F8               MOVW    R31:R30, R17:R16
+   \   00000002                      REQUIRE ??Subroutine11_0
+   \   00000002                      ;               // Fall through to label ??Subroutine11_0
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ??Subroutine11_0:
+   \   00000000   9634               ADIW    R31:R30, 4
+   \   00000002                      REQUIRE ??Subroutine12_0
+   \   00000002                      ;               // Fall through to label ??Subroutine12_0
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ??Subroutine12_0:
+   \   00000000   9105               LPM     R16, Z+
+   \   00000002   9114               LPM     R17, Z
+   \   00000004   01FD               MOVW    R31:R30, R27:R26
+   \   00000006   8304               STD     Z+4, R16
+   \   00000008   8315               STD     Z+5, R17
+   \   0000000A   9508               RET
+    172          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    173          void Out_Menu_Items (void)
+   \                     Out_Menu_Items:
+    174          {
+    175             clr_dsp_buf ();
+   \   00000000   ........           CALL    clr_dsp_buf
+    176          
+    177             out_name_level (); // Вывод названия уровня меню.
+   \   00000004   ....               RCALL   out_name_level
+    178          
+    179             make_page_menu (); // Вывод пунктов меню.
+   \   00000006   ....               RCALL   make_page_menu
+    180          
+    181             set_pos_curs ();   // Установка позиции и вывод курсора.
+   \   00000008   ....               RJMP    set_pos_curs
+    182          }
+    183          //========================================================================
+    184          
+    185          //========================================================================
+    186          // Вывод названия уровня меню.
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    187          void out_name_level (void)
+   \                     out_name_level:
+    188          {
+   \   00000000   ........           CALL    ?PROLOGUE4_L09
+    189             temp_menu = (menu_item __flash *)(CurrMenuItem->Parent); // Считывание названия уровня меню из пункта меню в верхнем уровне.
+   \   00000004   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_21:
+   \   00000006   9711               SBIW    R27:R26, 1
+   \   00000008   9185               LPM     R24, Z+
+   \   0000000A   9194               LPM     R25, Z
+   \   0000000C   01FD               MOVW    R31:R30, R27:R26
+   \   0000000E   8384               STD     Z+4, R24
+   \   00000010   8395               STD     Z+5, R25
+    190          
+    191             if ((void*)temp_menu != (void*)&NULL_ENTRY)
+   \   00000012   ....               LDI     R17, (Null_Menu) >> 8
+   \   00000014   ....               CPI     R24, LOW(Null_Menu)
+   \   00000016   0791               CPC     R25, R17
+   \   00000018   F0A9               BREQ    ??out_name_level_0
+    192             {
+    193                char __flash *data = temp_menu->Text;
+    194          
+    195                u08 i = count_chars (data); // Подсчет кол-ва символов в строке.
+   \   0000001A   01FC               MOVW    R31:R30, R25:R24
+   \   0000001C   963E               ADIW    R31:R30, 14
+   \   0000001E   ....               RCALL   ?Subroutine5
+   \                     ??CrossCallReturnLabel_9:
+   \   00000020   ....               RCALL   count_chars
+    196          
+    197          // Выравнивание текста посередине строки дисплея.
+    198          
+    199                u08 a = i;
+   \   00000022   2F20               MOV     R18, R16
+    200          
+    201                i = (20 - i); // Дисплей 20x4. Отнимаем от 20 число символов.
+    202          
+    203                i >>= 1; // Делим остаток на 2.
+   \   00000024   E114               LDI     R17, 20
+   \   00000026   1B10               SUB     R17, R16
+   \   00000028   2F01               MOV     R16, R17
+   \   0000002A   9506               LSR     R16
+    204          
+    205                if (a & (1<<0))
+   \   0000002C   FB20               BST     R18, 0
+   \   0000002E   F416               BRTC    ??out_name_level_1
+    206                   i += 2; // Если число нечетное.
+   \   00000030   5F0E               SUBI    R16, 254
+   \   00000032   C001               RJMP    ??out_name_level_2
+    207                else
+    208                   i++; // Если число четное.
+   \                     ??out_name_level_1:
+   \   00000034   9503               INC     R16
+    209          
+    210                Print_Buf (1, i, temp_menu->Text);
+   \                     ??out_name_level_2:
+   \   00000036   01FC               MOVW    R31:R30, R25:R24
+   \   00000038   963E               ADIW    R31:R30, 14
+   \   0000003A   9125               LPM     R18, Z+
+   \   0000003C   9134               LPM     R19, Z
+   \   0000003E   950A               DEC     R16
+   \   00000040   ........           CALL    _Print_Buf
+    211             }
+    212          }
+   \                     ??out_name_level_0:
+   \   00000044                      REQUIRE ?Subroutine10
+   \   00000044                      ;               // Fall through to label ?Subroutine10
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine10:
+   \   00000000   E0E4               LDI     R30, 4
+   \   00000002   ........           JMP     ?EPILOGUE_B4_L09
+    213          //========================================================================
+    214          
+    215          //========================================================================
+    216          // Подсчет кол-ва символов в строке.
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    217          u08 count_chars (char __flash *data)
+   \                     count_chars:
+    218          {
+    219             u08 i = 0;
+   \   00000000   E020               LDI     R18, 0
+   \   00000002   C001               RJMP    ??count_chars_0
+    220          
+    221             while (data [i])
+    222             {
+    223                i++;
+   \                     ??count_chars_1:
+   \   00000004   9523               INC     R18
+    224             }
+   \                     ??count_chars_0:
+   \   00000006   E030               LDI     R19, 0
+   \   00000008   01F8               MOVW    R31:R30, R17:R16
+   \   0000000A   0FE2               ADD     R30, R18
+   \   0000000C   1FF3               ADC     R31, R19
+   \   0000000E   9134               LPM     R19, Z
+   \   00000010   2333               TST     R19
+   \   00000012   F7C1               BRNE    ??count_chars_1
+    225             return i;
+   \   00000014   2F02               MOV     R16, R18
+   \   00000016   9508               RET
+    226          }
+    227          //========================================================================
+    228          
+    229          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    230          void make_page_menu (void)
+   \                     make_page_menu:
+    231          {
+   \   00000000   ........           CALL    ?PROLOGUE4_L09
+    232             signed char tmp_pos_y_curs;
+    233             u08 i; // Счетчик страниц.
+    234             u08 j; // Страница меню.
+    235          
+    236             if (quant_items > 1) // Если пунктов меню больше 1, значит есть что выводить.
+   \   00000004   ....               LDI     R26, LOW(CurrMenuItem)
+   \   00000006   ....               LDI     R27, (CurrMenuItem) >> 8
+   \   00000008   ....               RCALL   ?Subroutine7
+   \                     ??CrossCallReturnLabel_13:
+   \   0000000A   F1C0               BRCS    ??make_page_menu_0
+    237             {
+    238                temp_menu = BeginCurrMenuLevel;
+   \   0000000C   01FD               MOVW    R31:R30, R27:R26
+   \   0000000E   8102               LDD     R16, Z+2
+   \   00000010   8113               LDD     R17, Z+3
+   \   00000012   8304               STD     Z+4, R16
+   \   00000014   8315               STD     Z+5, R17
+    239          
+    240                if (pos_y_curs > PAGE_MENU)
+   \   00000016   8117               LDD     R17, Z+7
+   \   00000018   3014               CPI     R17, 4
+   \   0000001A   F098               BRCS    ??make_page_menu_1
+    241                {
+    242                   tmp_pos_y_curs = pos_y_curs;
+   \   0000001C   2F01               MOV     R16, R17
+    243          
+    244                   i = 0; // Счетчик страниц.
+   \   0000001E   E020               LDI     R18, 0
+   \   00000020   C002               RJMP    ??make_page_menu_2
+    245          
+    246                   while (tmp_pos_y_curs > 0)
+    247                   {
+    248                      tmp_pos_y_curs -= PAGE_MENU;
+   \                     ??make_page_menu_3:
+   \   00000022   5003               SUBI    R16, 3
+    249                      i++;
+   \   00000024   9523               INC     R18
+    250                   }
+   \                     ??make_page_menu_2:
+   \   00000026   3001               CPI     R16, 1
+   \   00000028   F7E4               BRGE    ??make_page_menu_3
+    251                   tmp_pos_y_curs += PAGE_MENU;
+    252          
+    253                   j = PAGE_MENU; // Страница меню.
+   \   0000002A   C006               RJMP    ??make_page_menu_4
+    254          
+    255                   while (i-- > 1)
+    256                   {
+    257                      while (j--)
+    258                      {
+    259                         temp_menu = (menu_item __flash *)(temp_menu->Next); // Следующий пункт меню.
+   \                     ??make_page_menu_5:
+   \   0000002C   ....               RCALL   ?Subroutine6
+    260                      }
+   \                     ??CrossCallReturnLabel_10:
+   \   0000002E   ....               RCALL   ??Subroutine11_0
+   \                     ??CrossCallReturnLabel_25:
+   \   00000030   2F09               MOV     R16, R25
+   \   00000032   959A               DEC     R25
+   \   00000034   2300               TST     R16
+   \   00000036   F7D1               BRNE    ??make_page_menu_5
+    261                      j = PAGE_MENU; // Страница меню.
+   \                     ??make_page_menu_4:
+   \   00000038   E093               LDI     R25, 3
+    262                   }
+   \   0000003A   2F02               MOV     R16, R18
+   \   0000003C   952A               DEC     R18
+   \   0000003E   3002               CPI     R16, 2
+   \   00000040   F7B8               BRCC    ??CrossCallReturnLabel_25
+    263                }
+    264          
+    265                u08 pos_y_text_item = 2; // 
+   \                     ??make_page_menu_1:
+   \   00000042   E082               LDI     R24, 2
+    266                j = PAGE_MENU; // Страница меню.
+   \   00000044   E093               LDI     R25, 3
+   \   00000046   C001               RJMP    ??make_page_menu_6
+    267          
+    268                while (j--)
+    269                {
+    270                   Print_Buf (pos_y_text_item, 2, temp_menu->Text); // вывод названия пункта меню.
+    271          
+    272                   temp_menu = (menu_item __flash *)(temp_menu->Next); // Следующий пункт меню.
+    273          
+    274                   if ((void*)temp_menu == (void*)&NULL_ENTRY) // Если элемент Next
+    275                      return;                                  // пустой, то выход.
+    276                   else
+    277                      pos_y_text_item++;
+   \                     ??make_page_menu_7:
+   \   00000048   9583               INC     R24
+   \                     ??make_page_menu_6:
+   \   0000004A   2F09               MOV     R16, R25
+   \   0000004C   959A               DEC     R25
+   \   0000004E   2300               TST     R16
+   \   00000050   F0A9               BREQ    ??make_page_menu_0
+   \   00000052   ....               RCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_11:
+   \   00000054   963E               ADIW    R31:R30, 14
+   \   00000056   9125               LPM     R18, Z+
+   \   00000058   9134               LPM     R19, Z
+   \   0000005A   E104               LDI     R16, 20
+   \   0000005C   9F80               MUL     R24, R16
+   \   0000005E   EE0D               LDI     R16, 237
+   \   00000060   0D00               ADD     R16, R0
+   \   00000062   ........           CALL    _Print_Buf
+   \   00000066   01FD               MOVW    R31:R30, R27:R26
+   \   00000068   ....               RCALL   ?Subroutine6
+   \                     ??CrossCallReturnLabel_12:
+   \   0000006A   9634               ADIW    R31:R30, 4
+   \   0000006C   9125               LPM     R18, Z+
+   \   0000006E   9134               LPM     R19, Z
+   \   00000070   01FD               MOVW    R31:R30, R27:R26
+   \   00000072   8324               STD     Z+4, R18
+   \   00000074   8335               STD     Z+5, R19
+   \   00000076   ....               CPI     R18, LOW(Null_Menu)
+   \   00000078   ....               SBCI    R19, (Null_Menu) >> 8
+   \   0000007A   F731               BRNE    ??make_page_menu_7
+    278                }
+    279             }
+   \                     ??make_page_menu_0:
+   \   0000007C   ....               RJMP    ?Subroutine10
+    280          }
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine6:
+   \   00000000   8104               LDD     R16, Z+4
+   \   00000002   81F5               LDD     R31, Z+5
+   \   00000004   2FE0               MOV     R30, R16
+   \   00000006   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine7:
+   \   00000000   9100....           LDS     R16, (CurrMenuItem + 6)
+   \   00000004   3002               CPI     R16, 2
+   \   00000006   9508               RET
+    281          //========================================================================
+    282          
+    283          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    284          void inc_pos_y_curs (void)
+   \                     inc_pos_y_curs:
+    285          {
+    286             if (quant_items > 1)
+   \   00000000   ....               LDI     R30, LOW(CurrMenuItem)
+   \   00000002   ....               LDI     R31, (CurrMenuItem) >> 8
+   \   00000004   8106               LDD     R16, Z+6
+   \   00000006   3002               CPI     R16, 2
+   \   00000008   F030               BRCS    ??inc_pos_y_curs_0
+    287             {
+    288                if (pos_y_curs < quant_items) pos_y_curs++;
+   \   0000000A   8117               LDD     R17, Z+7
+   \   0000000C   1710               CP      R17, R16
+   \   0000000E   F418               BRCC    ??inc_pos_y_curs_0
+   \   00000010   2F01               MOV     R16, R17
+   \   00000012   9503               INC     R16
+   \   00000014   8307               STD     Z+7, R16
+    289             }
+    290          }
+   \                     ??inc_pos_y_curs_0:
+   \   00000016   9508               RET
+    291          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    292          void dec_pos_y_curs (void)
+   \                     dec_pos_y_curs:
+    293          {
+    294             if (quant_items > 1)
+   \   00000000   ....               RCALL   ?Subroutine7
+   \                     ??CrossCallReturnLabel_14:
+   \   00000002   F038               BRCS    ??dec_pos_y_curs_0
+    295             {
+    296                if (pos_y_curs > 1) pos_y_curs--;
+   \   00000004   9100....           LDS     R16, (CurrMenuItem + 7)
+   \   00000008   3002               CPI     R16, 2
+   \   0000000A   F018               BRCS    ??dec_pos_y_curs_0
+   \   0000000C   950A               DEC     R16
+   \   0000000E   9300....           STS     (CurrMenuItem + 7), R16
+    297             }
+    298          }
+   \                     ??dec_pos_y_curs_0:
+   \   00000012   9508               RET
+    299          //========================================================================
+    300          
+    301          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    302          void set_pos_curs (void)
+   \                     set_pos_curs:
+    303          {
+    304             if (quant_items > 1)
+   \   00000000   ....               RCALL   ?Subroutine7
+   \                     ??CrossCallReturnLabel_15:
+   \   00000002   F068               BRCS    ??set_pos_curs_0
+    305             {
+    306                signed char tmp = pos_y_curs;
+   \   00000004   9100....           LDS     R16, (CurrMenuItem + 7)
+   \   00000008   C001               RJMP    ??set_pos_curs_1
+    307          
+    308                while (tmp > 0)
+    309                {
+    310                   tmp -= PAGE_MENU;
+   \                     ??set_pos_curs_2:
+   \   0000000A   5003               SUBI    R16, 3
+    311                }
+   \                     ??set_pos_curs_1:
+   \   0000000C   3001               CPI     R16, 1
+   \   0000000E   F7EC               BRGE    ??set_pos_curs_2
+    312          
+    313                if (tmp <= 0) tmp += PAGE_MENU;
+    314          
+    315                PrintChar (tmp + 1, 1, ARROW_RIGHT);
+   \   00000010   E012               LDI     R17, 2
+   \   00000012   5F0D               SUBI    R16, 253
+   \   00000014   E124               LDI     R18, 20
+   \   00000016   9F02               MUL     R16, R18
+   \   00000018   2D00               MOV     R16, R0
+   \   0000001A   ........           CALL    _PrintChar
+    316             }
+    317          }
+   \                     ??set_pos_curs_0:
+   \   0000001E   9508               RET
+    318          //========================================================================
+
+   Maximum stack usage in bytes:
+
+   CSTACK RSTACK Function
+   ------ ------ --------
+       0      2  MenuFunc
+                   0 2 -- Indirect call
+       0      2  Out_Menu_Items
+                   0 2 -> clr_dsp_buf
+                   0 2 -> make_page_menu
+                   0 2 -> out_name_level
+                   0 2 -> set_pos_curs
+       0      2  Out_Menu_Items_Init
+       2      2  Set_Menu_Item
+                   2 2 -> MenuFunc
+                   2 2 -> Out_Menu_Items
+       2      2  Set_Menu_Level
+                   2 2 -> MenuFunc
+                   2 2 -> Out_Menu_Items
+                   2 2 -> Out_Menu_Items_Init
+       0      2  count_chars
+       0      2  dec_pos_y_curs
+       0      2  inc_pos_y_curs
+       4      2  make_page_menu
+                   4 2 -> _Print_Buf
+       4      2  out_name_level
+                   4 2 -> _Print_Buf
+                   4 2 -> count_chars
+       2      2  proc_menu_keys
+                   2 2 -> GetKeyCode
+                   2 2 -> Get_Event
+                   2 2 -> MenuFunc
+                   2 2 -> Set_Menu_Item
+                   2 2 -> Set_Menu_Level
+                   2 2 -> dec_pos_y_curs
+                   2 2 -> inc_pos_y_curs
+       0      2  set_pos_curs
+                   0 2 -> _PrintChar
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ??Subroutine11_0
+      12  ??Subroutine12_0
+       2  ?Subroutine0
+      12  ?Subroutine1
+       6  ?Subroutine10
+      12  ?Subroutine3
+      10  ?Subroutine4
+       6  ?Subroutine5
+       8  ?Subroutine6
+       8  ?Subroutine7
+      10  ?Subroutine8
+       6  ?Subroutine9
+       8  CurrMenuItem
+          BeginCurrMenuLevel
+          temp_menu
+          quant_items
+          pos_y_curs
+      12  MenuFunc
+       2  MenuFuncPtr
+      16  Null_Menu
+      10  Out_Menu_Items
+     144  Out_Menu_Items_Init
+      10  Set_Menu_Item
+      10  Set_Menu_Level
+      24  count_chars
+      20  dec_pos_y_curs
+      24  inc_pos_y_curs
+     126  make_page_menu
+      68  out_name_level
+      90  proc_menu_keys
+      32  set_pos_curs
+       6  -- Other
+
+ 
+ 664 bytes in segment CODE
+   6 bytes in segment INITTAB
+  16 bytes in segment NEAR_F
+  10 bytes in segment NEAR_Z
+ 
+ 680 bytes of CODE memory (+ 6 bytes shared)
+  10 bytes of DATA memory
+
+Errors: none
+Warnings: none

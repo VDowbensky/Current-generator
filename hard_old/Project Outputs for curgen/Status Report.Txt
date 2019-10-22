@@ -1,0 +1,16 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Project [curgen.PrjPcb]
+   Generated File[curgen_a.GTL]
+   Generated File[curgen_a.GBL]
+   Generated File[curgen_a.GD1]
+   Generated File[curgen_a.GG1]
+   Generated File[curgen_a.RUL]
+   Generated File[curgen_a.EXTREP]
+   Generated File[curgen_a.REP]
+
+
+Files Generated   : 7
+Documents Printed : 0
+
+Finished Output Generation At 14:36:53 On 13.09.2012

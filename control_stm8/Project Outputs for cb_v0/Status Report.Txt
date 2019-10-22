@@ -1,0 +1,16 @@
+Output: Gerber Files
+Type  : Gerber
+From  : Variant [[No Variations]] of Project [cb_v0.PrjPcb]
+   Generated File[cb_v1_a.GTL]
+   Generated File[cb_v1_a.GBL]
+   Generated File[cb_v1_a.GD1]
+   Generated File[cb_v1_a.GG1]
+   Generated File[cb_v1_a.RUL]
+   Generated File[cb_v1_a.EXTREP]
+   Generated File[cb_v1_a.REP]
+
+
+Files Generated   : 7
+Documents Printed : 0
+
+Finished Output Generation At 16:15:40 On 13.09.2012

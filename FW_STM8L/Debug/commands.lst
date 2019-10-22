@@ -1,0 +1,820 @@
+RCSTM8 COMPILER V2.28.10.092,  COMMANDS           04/19/16  10:19:19
+
+QCW(0x009638A0)
+
+RCSTM8 COMPILER V2.28.10.092, COMPILATION OF MODULE COMMANDS  
+OBJECT MODULE PLACED IN Debug\commands.o
+COMPILER INVOKED BY: OBJECT(Debug\commands.o) PIN(C:\Program Files (x86)\Raisonance\Ride\inc\STM8) PIN(C:\Program Files (x86)\Raisonance\Ride\inc\ST7) PIN(C:\Program Files (x86)\Raisonance\Ride\inc) DGC(page0) AUTO WRV(0) PR(Debug\commands.lst) CD CO SB OT(0) DEBUG STM8(SMALL) 
+
+stmt level    source
+   1          #include "commands.h"
+   2          #include "uart.h"
+   3          #include "timers.h"
+   4          #include "eeprom.h"
+   5          #include "gpio.h"
+   6          #include "dac.h"
+
+*** ERROR C155 IN LINE 6 OF commands.c : cannot open 'dac.h'
+
+   7          
+   8          void compCRC (BYTE crcCount);
+   9          void comp_crc (BYTE b);
+  10          void checkpacket (BYTE packlen);
+  11          void handlecommand(void);
+  12          bit checkEmptyID(void);
+  13          bit checkpassword(void);
+  14          void sendpacket(BYTE txcount);
+  15          void sendOKresponse(void);
+  16          void sendERRresponse(void);
+  17          void sendrequest(void);
+  18          
+  19          BYTE CRC;
+  20          BYTE TxCRC;
+  21          BYTE RxCRC;
+  22          bit F_Comm;
+  23          BYTE Command;
+  24          bit TuneMode;
+  25          bit F_Comm;
+  26          bit Lister;
+  27          
+  28          code const BYTE COMMANDLIST[] = {C_READONCE,9, C_READCONT,9, TC_ENTRY,4, 0,0};
+  29          code const BYTE TUNELIST[] = {TC_RD_SN,4, TC_RD_CONFIG,4, TC_WR_CONFIG,5, TC_RD_OFFSET,4, 
+  30          TC_WR_OFFSET,6, TC_RD_VTUNE,4, TC_WR_VTUNE,5, TC_WRDAC12,6, TC_WRDAC8,5, TC_RD_GAIN,4, TC_WR_GAIN,5, TC_WR_DEFAULT,
+  31          4, TC_WR_SN,10, TC_RESET_SN,8, TC_EXIT,4, 0, 0};
+  32          
+  33          
+  34          
+  35          void compCRC (BYTE crcCount)
+  36          {  	
+  37   1      	BYTE i;
+  38   1      	CRC=0;
+  39   1      	for (i=0; i<(crcCount); i++)
+  40   1      	{
+  41   2      		comp_crc(TxBuffer[i]);
+  42   2      		TxCRC=CRC;
+  43   2      	}
+  44   1      
+  45   1      }//CompCRC
+  46          
+  47          
+  48          void comp_crc (BYTE b)
+  49          {
+  50   1      	BYTE j;
+  51   1      	for (j=8; j>0; j--)
+  52   1      	{
+  53   2      		if ( (b ^ CRC) & 0x01) 
+  54   2      		{ 
+  55   3            	CRC = ( (CRC ^ CRCPOLY) >> 1 ) | 0x80; 
+  56   3          	} 
+  57   2      		else 
+  58   2      		{ 
+  59   3            	CRC >>= 1; 
+  60   3          	} 
+  61   2          	b >>= 1;
+  62   2      	}
+  63   1      }//comp_crc
+  64          
+  65          void checkpacket (BYTE packlen)
+  66          {
+  67   1       	BYTE i;
+  68   1      	//RxCRC = 0;
+  69   1      	CRC=0;
+  70   1      	for (i=0; i<packlen; i++)	
+  71   1      	{
+  72   2      	comp_crc (RxBuffer[i]);
+  73   2      	RxCRC = CRC;
+  74   2      	}
+  75   1      	if (RxCRC == RxBuffer[packlen]) 
+  76   1      	{
+  77   2      	F_Comm = 1;
+  78   2      	Command = RxBuffer[2];
+  79   2      	}
+  80   1      	else clearRxBuff();
+  81   1      	
+  82   1      } 
+  83          
+  84          void handlecommand(void)
+  85          {	 	
+  86   1      		F_Comm = 0;
+  87   1      		CommError = 0;
+  88   1      		RxStatus = 0;
+  89   1      		//Command=RxBuffer[2];
+  90   1      		switch (Command)
+  91   1      		{
+  92   2      		case C_READONCE:
+  93   2      		case C_READCONT:
+  94   2      		{
+  95   3      		DWORD tmp;
+  96   3      		ErrCounter = MAXERRCOUNT; //reset error counter
+  97   3      		CommError = 0;
+  98   3      		LED_set(1);
+  99   3      		tmp = RxBuffer[6]+(WORD)(256*RxBuffer[7]);
+ 100   3      		tmp = (tmp*((Gain & ~0x80)+4))/4;
+
+*** ERROR C014 IN LINE 100 OF commands.c : Undefined 'Gain'
+ 101   3      		DACvalue = (WORD)tmp/16;
+
+*** ERROR C014 IN LINE 101 OF commands.c : Undefined 'DACvalue'
+ 102   3      		updateDAC();
+
+*** WARNING C090 IN LINE 102 OF commands.c : Call to function 'updateDAC' without prototype
+ 103   3      		if (CheckERF) blink(1); //normal current mode
+ 104   3      		else blink (3); //error - current loop open!
+ 105   3      		break;
+ 106   3      		}
+ 107   2      		
+ 108   2      		case TC_ENTRY:
+ 109   2      		//tune mode entry
+ 110   2      		TuneMode = 1;
+ 111   2      		sendOKresponse();
+ 112   2      		blink(5);
+ 113   2      		break;
+ 114   2      	
+ 115   2      
+ 116   2      		case TC_RD_SN: //send date of manufacturing & serial number
+ 117   2      		 	{
+ 118   3      			BYTE i;
+ 119   3      			for (i=0; i<8; i++) TxBuffer[i+3]=PARAMS[i];
+ 120   3      			//TxBuffer[17]=NetAddr;
+ 121   3      			//TxBuffer[13] = LO(DACvalue);
+ 122   3      			//TxBuffer[14] = HI(DACvalue);
+ 123   3      			//TxCount=21;
+ 124   3      			sendpacket(11);
+ 125   3      			}
+ 126   2      			break;
+ 127   2      
+ 128   2      		case TC_RD_CONFIG: //fake response, for compatibility
+ 129   2      		TxBuffer[3] = 0; 
+ 130   2      		sendpacket(4);
+ 131   2      		break;
+ 132   2      			
+ 133   2      		case TC_WR_CONFIG: //fake response, for compatibility
+ 134   2      		sendOKresponse();			
+ 135   2      		break;
+ 136   2      			
+ 137   2      		case TC_RD_OFFSET:
+ 138   2      		TxBuffer[3] = Offset12;
+
+*** ERROR C014 IN LINE 138 OF commands.c : Undefined 'Offset12'
+ 139   2      		TxBuffer[4] = 0; //offset8 not implemented
+ 140   2      		sendpacket(5);
+ 141   2      		break;
+ 142   2      		
+ 143   2      			
+ 144   2      		case TC_WR_OFFSET:
+ 145   2      		Offset12 = RxBuffer[3];
+
+*** ERROR C014 IN LINE 145 OF commands.c : Undefined 'Offset12'
+ 146   2      		ee_read();
+ 147   2      		EEbuffer[9] = Offset12;
+
+*** ERROR C014 IN LINE 147 OF commands.c : Undefined 'Offset12'
+ 148   2      		ee_pgm();
+ 149   2      		updateDAC();
+ 150   2      		sendOKresponse();
+ 151   2      		break;
+ 152   2      			
+ 153   2      		case TC_RD_VTUNE:
+ 154   2      		TxBuffer[3] = Vtune;
+
+*** ERROR C014 IN LINE 154 OF commands.c : Undefined 'Vtune'
+ 155   2      		sendpacket(4);
+ 156   2      		break;
+ 157   2      			
+ 158   2      			
+ 159   2      		case TC_WR_VTUNE:
+ 160   2      		Vtune = RxBuffer[3];
+
+*** ERROR C014 IN LINE 160 OF commands.c : Undefined 'Vtune'
+ 161   2      		ee_read();
+ 162   2      		EEbuffer[8] = Vtune;
+
+*** ERROR C014 IN LINE 162 OF commands.c : Undefined 'Vtune'
+ 163   2      		ee_pgm();
+ 164   2      		updateTIM3();
+ 165   2      		updateDAC();
+ 166   2      		sendOKresponse();
+ 167   2      		break;
+ 168   2      		
+ 169   2      		case TC_WRDAC12:
+ 170   2      		{
+ 171   3      		DWORD tmp;
+ 172   3      		ErrCounter = MAXERRCOUNT; //reset error counter
+ 173   3      		CommError = 0;
+ 174   3      		//LED = 0;
+ 175   3      		tmp = RxBuffer[3]+(WORD)(256*RxBuffer[4]);
+ 176   3      		tmp = (tmp*((Gain & ~0x80)+4))/4;
+
+*** ERROR C014 IN LINE 176 OF commands.c : Undefined 'Gain'
+ 177   3      		DACvalue = (WORD)tmp;
+
+*** ERROR C014 IN LINE 177 OF commands.c : Undefined 'DACvalue'
+ 178   3      		updateDAC();
+ 179   3      		if (CheckERF) blink(1); //normal current mode
+ 180   3      		else blink (3); //error - current loop open!
+ 181   3      		break;
+ 182   3      		}
+ 183   2      		  
+ 184   2      		case TC_WRDAC8:
+ 185   2      		sendOKresponse();
+ 186   2      		break;
+ 187   2      		
+ 188   2      		case TC_RD_GAIN://send 1 zero byte 
+ 189   2      		TxBuffer[3] = Gain;
+
+*** ERROR C014 IN LINE 189 OF commands.c : Undefined 'Gain'
+ 190   2      		sendpacket(4);
+ 191   2      		break;
+ 192   2      
+ 193   2      		case TC_WR_GAIN://send 2 dummy byte, maybe fake value of Vcc (about 3,3 V).
+ 194   2      		Gain = RxBuffer[3];
+
+*** ERROR C014 IN LINE 194 OF commands.c : Undefined 'Gain'
+ 195   2      		ee_read();
+ 196   2      		EEbuffer[10] = Gain;
+
+*** ERROR C014 IN LINE 196 OF commands.c : Undefined 'Gain'
+ 197   2      		ee_pgm();
+ 198   2      		updateDAC();
+ 199   2      		if (Gain & 0x80) Lister = 1;
+
+*** ERROR C014 IN LINE 199 OF commands.c : Undefined 'Gain'
+ 200   2      		else Lister = 0;
+ 201   2      		sendOKresponse();
+ 202   2      		break;
+ 203   2      
+ 204   2      
+ 205   2      		case TC_WR_DEFAULT:
+ 206   2      		sendOKresponse();
+ 207   2      	 	break;
+ 208   2      		
+ 209   2      		case TC_WR_SN:
+ 210   2      		//check for zero serial number
+ 211   2      		if (!checkEmptyID()) sendERRresponse();
+ 212   2      			else 
+ 213   2      		 	
+ 214   2      		 		{
+ 215   3      				BYTE i;
+ 216   3      				ee_read();
+ 217   3      				for (i=0; i<6; i++)	EEbuffer[i] = RxBuffer[i+3];
+ 218   3      				ee_pgm();
+ 219   3      		 		sendOKresponse();
+ 220   3      				}
+ 221   2      		 		break;
+ 222   2      				
+ 223   2      	
+ 224   2      		case TC_RESET_SN:
+ 225   2      		if (!checkpassword()) sendERRresponse();
+ 226   2      		 else
+ 227   2      		 	{
+ 228   3      			BYTE i;
+ 229   3      			ee_read();
+ 230   3      			for (i=0; i<6; i++) EEbuffer[i] = 0;
+ 231   3      			ee_pgm();
+ 232   3      			sendOKresponse();
+ 233   3      			}
+ 234   2      		break;
+ 235   2      		
+ 236   2      		case TC_EXIT://update parameters, then blink 5 times and go to work mode
+ 237   2      		sendOKresponse();
+ 238   2      		blink(5);
+ 239   2      		TuneMode = 0;
+ 240   2      		readparameters();
+ 241   2      		break;
+ 242   2      		
+ 243   2      		
+ 244   2      		default:
+ 245   2      		break;	//nothing to do
+ 246   2      
+ 247   2      		}//switch (Command)
+ 248   1      		clearRxBuff();
+ 249   1      		//else
+ 250   1      	} //void EDEhandle(void)
+ 251          	
+ 252          bit checkEmptyID(void)
+ 253          {
+ 254   1      
+ 255   1      	BYTE i;
+ 256   1      	ee_read();
+ 257   1      	for (i=0; i<6; i++)
+ 258   1      	{
+ 259   2      	if (EEbuffer[i] !=0) return 0;
+ 260   2      	}
+ 261   1      	return 1;
+ 262   1      }
+ 263          
+ 264          bit checkpassword(void)
+ 265          {
+ 266   1      	BYTE i;
+ 267   1      	for (i=0; i<4; i++)
+ 268   1      	{
+ 269   2      	if (RxBuffer[i+3] != PASSWORD[i]) return 0;
+ 270   2      	}
+ 271   1      	return 1;
+ 272   1      }
+ 273          
+ 274          void sendpacket(BYTE txcount)
+ 275          {
+ 276   1      		if (!TuneMode) TxBuffer[0]=TXPREFIX;
+ 277   1      		else TxBuffer[0]=TUNEPREFIX;
+ 278   1      		if (!TuneMode) TxBuffer[1]=0xFF;
+ 279   1      		else TxBuffer[1]=IDENT;
+ 280   1      		TxBuffer[2]=Command;
+ 281   1      		//other fields are filled in command handler
+ 282   1      		compCRC(txcount);
+ 283   1      		TxBuffer[txcount]=TxCRC;
+ 284   1      		RxPointer=0;
+ 285   1      		//delay(5);
+ 286   1      		putpack(txcount);
+ 287   1      		clearRxBuff();//RxFlag=0;//command executed
+ 288   1      
+ 289   1      }
+ 290          void sendOKresponse(void)
+ 291          {		TxBuffer[3]=0;
+ 292   1      		sendpacket(4);
+ 293   1      		blink(2);
+ 294   1      }
+ 295          
+ 296          void sendERRresponse(void)
+ 297          {		TxBuffer[3]=1;
+ 298   1      		sendpacket(4);
+ 299   1      		blink(3);
+ 300   1      }
+ 301          
+ 302          void sendrequest(void)
+ 303          {
+ 304   1      	if (Lister || TuneMode) 
+ 305   1      	{
+ 306   2      		
+ 307   2      	}
+ 308   1      	else
+ 309   1      	{
+ 310   2      		Command = C_READONCE;
+ 311   2      		sendpacket(3);
+ 312   2      	}
+ 313   1      	Tim2Flag = 0;
+ 314   1      }
+ 315          
+RCSTM8 COMPILER V2.28.10.092
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+RCSTM8 COMPILER V2.28.10.092
+NAME                                    CLASS   MSPACE  TYPE    OFFSET  SIZE
+====                                    =====   ======  ====    ======  ====
+
+PA_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005000H 1      
+PA_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005001H 1      
+PA_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005002H 1      
+PA_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005003H 1      
+PA_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005004H 1      
+PB_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005005H 1      
+PB_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005006H 1      
+PB_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005007H 1      
+PB_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005008H 1      
+PB_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005009H 1      
+PC_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500AH 1      
+PC_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500BH 1      
+PC_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500CH 1      
+PC_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500DH 1      
+PC_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500EH 1      
+PD_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500FH 1      
+PD_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005010H 1      
+PD_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005011H 1      
+PD_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005012H 1      
+PD_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005013H 1      
+PE_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005014H 1      
+PE_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005015H 1      
+PE_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005016H 1      
+PE_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005017H 1      
+PE_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005018H 1      
+PF_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005019H 1      
+PF_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501AH 1      
+PF_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501BH 1      
+PF_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501CH 1      
+PF_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501DH 1      
+FLASH_CR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005050H 1      
+FLASH_CR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005051H 1      
+FLASH_PUKR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005052H 1      
+FLASH_DUKR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005053H 1      
+FLASH_IAPSR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005054H 1      
+DMA1_GCSR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005070H 1      
+DMA1_GIR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005071H 1      
+DMA1_C0CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005075H 1      
+DMA1_C0SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005076H 1      
+DMA1_C0NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005077H 1      
+DMA1_C0PAR . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005078H 2      
+DMA1_C0PARH. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005078H 1      
+DMA1_C0PARL. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005079H 1      
+DMA1_C0M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00507BH 2      
+DMA1_C0M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00507BH 1      
+DMA1_C0M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00507CH 1      
+DMA1_C1CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00507FH 1      
+DMA1_C1SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005080H 1      
+DMA1_C1NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005081H 1      
+DMA1_C1PAR . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005082H 2      
+DMA1_C1PARH. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005082H 1      
+DMA1_C1PARL. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005083H 1      
+DMA1_C1M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005085H 2      
+DMA1_C1M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005085H 1      
+DMA1_C1M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005086H 1      
+DMA1_C2CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005089H 1      
+DMA1_C2SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508AH 1      
+DMA1_C2NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508BH 1      
+DMA1_C2PAR . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00508CH 2      
+DMA1_C2PARH. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508CH 1      
+DMA1_C2PARL. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508DH 1      
+DMA1_C2M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00508FH 2      
+DMA1_C2M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508FH 1      
+DMA1_C2M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005090H 1      
+DMA1_C3CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005093H 1      
+DMA1_C3SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005094H 1      
+DMA1_C3NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005095H 1      
+DMA1_C3PAR_C3M1AR. . . . . . . . . . .  HREG16   hreg16  U_INT   005096H 2      
+DMA1_C3PARH_C3M1ARH. . . . . . . . . .  HREG     hreg    U_CHAR  005096H 1      
+DMA1_C3PARL_C3M1ARL. . . . . . . . . .  HREG     hreg    U_CHAR  005097H 1      
+DMA1_C3M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005099H 2      
+DMA1_C3M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005099H 1      
+DMA1_C3M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00509AH 1      
+SYSCFG_RMPCR1. . . . . . . . . . . . .  HREG     hreg    U_CHAR  00509EH 1      
+SYSCFG_RMPCR2. . . . . . . . . . . . .  HREG     hreg    U_CHAR  00509FH 1      
+EXTI_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A0H 1      
+EXTI_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A1H 1      
+EXTI_CR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A2H 1      
+EXTI_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A3H 1      
+EXTI_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A4H 1      
+EXTI_CONF. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A5H 1      
+WFE_CR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A6H 1      
+WFE_CR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A7H 1      
+WFE_CR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A8H 1      
+RST_CR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B0H 1      
+RST_SR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B1H 1      
+PWR_CSR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B2H 1      
+PWR_CSR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B3H 1      
+CLK_CKDIVR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C0H 1      
+CLK_CRTCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C1H 1      
+CLK_ICKCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C2H 1      
+CLK_PCKENR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C3H 1      
+CLK_PCKENR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C4H 1      
+CLK_CCOR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C5H 1      
+CLK_ECKCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C6H 1      
+CLK_SCSR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C7H 1      
+CLK_SWR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C8H 1      
+CLK_SWCR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C9H 1      
+CLK_CSSR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CAH 1      
+CLK_CBEEPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CBH 1      
+CLK_HSICALR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CCH 1      
+CLK_HSITRIMR . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CDH 1      
+CLK_HSIUNLCKR. . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CEH 1      
+CLK_REGCSR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CFH 1      
+WWDG_CR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050D3H 1      
+WWDG_WR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050D4H 1      
+IWDG_KR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050E0H 1      
+IWDG_PR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050E1H 1      
+IWDG_RLR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050E2H 1      
+BEEP_CSR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050F0H 1      
+BEEP_CSR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050F3H 1      
+RTC_TR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005140H 1      
+RTC_TR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005141H 1      
+RTC_TR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005142H 1      
+RTC_DR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005144H 1      
+RTC_DR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005145H 1      
+RTC_DR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005146H 1      
+RTC_CR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005148H 1      
+RTC_CR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005149H 1      
+RTC_CR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00514AH 1      
+RTC_ISR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00514CH 1      
+RTC_ISR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00514DH 1      
+RTC_SPRER. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005150H 2      
+RTC_SPRERH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005150H 1      
+RTC_SPRERL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005151H 1      
+RTC_APRER. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005152H 1      
+RTC_WUTR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005154H 2      
+RTC_WUTRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005154H 1      
+RTC_WUTRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005155H 1      
+RTC_WPR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005159H 1      
+RTC_ALRMAR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515CH 1      
+RTC_ALRMAR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515DH 1      
+RTC_ALRMAR3. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515EH 1      
+RTC_ALRMAR4. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515FH 1      
+SPI1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005200H 1      
+SPI1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005201H 1      
+SPI1_ICR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005202H 1      
+SPI1_SR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005203H 1      
+SPI1_DR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005204H 1      
+SPI1_CRCPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005205H 1      
+SPI1_RXCRCR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005206H 1      
+SPI1_TXCRCR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005207H 1      
+I2C1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005210H 1      
+I2C1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005211H 1      
+I2C1_FREQR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005212H 1      
+I2C1_OARL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005213H 1      
+I2C1_OARH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005214H 1      
+I2C1_DR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005216H 1      
+I2C1_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005217H 1      
+I2C1_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005218H 1      
+I2C1_SR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005219H 1      
+I2C1_ITR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521AH 1      
+I2C1_CCRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521BH 1      
+I2C1_CCRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521CH 1      
+I2C1_TRISER. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521DH 1      
+I2C1_PECR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521EH 1      
+USART1_SR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005230H 1      
+USART1_DR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005231H 1      
+USART1_BRR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005232H 1      
+USART1_BRR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005233H 1      
+USART1_CR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005234H 1      
+USART1_CR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005235H 1      
+USART1_CR3 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005236H 1      
+USART1_CR4 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005237H 1      
+USART1_CR5 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005238H 1      
+USART1_GTR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005239H 1      
+USART1_PSCR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00523AH 1      
+TIM2_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005250H 1      
+TIM2_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005251H 1      
+TIM2_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005252H 1      
+TIM2_ETR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005253H 1      
+TIM2_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005254H 1      
+TIM2_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005255H 1      
+TIM2_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005256H 1      
+TIM2_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005257H 1      
+TIM2_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005258H 1      
+TIM2_CCMR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005259H 1      
+TIM2_CCMR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525AH 1      
+TIM2_CCER1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525BH 1      
+TIM2_CNTR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00525CH 2      
+TIM2_CNTRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525CH 1      
+TIM2_CNTRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525DH 1      
+TIM2_PSCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525EH 1      
+TIM2_ARR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00525FH 2      
+TIM2_ARRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525FH 1      
+TIM2_ARRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005260H 1      
+TIM2_CCR1. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005261H 2      
+TIM2_CCR1H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005261H 1      
+TIM2_CCR1L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005262H 1      
+TIM2_CCR2. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005263H 2      
+TIM2_CCR2H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005263H 1      
+TIM2_CCR2L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005264H 1      
+TIM2_BKR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005265H 1      
+TIM2_OISR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005266H 1      
+TIM3_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005280H 1      
+TIM3_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005281H 1      
+TIM3_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005282H 1      
+TIM3_ETR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005283H 1      
+TIM3_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005284H 1      
+TIM3_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005285H 1      
+TIM3_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005286H 1      
+TIM3_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005287H 1      
+TIM3_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005288H 1      
+TIM3_CCMR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005289H 1      
+TIM3_CCMR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528AH 1      
+TIM3_CCER1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528BH 1      
+TIM3_CNTR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00528CH 2      
+TIM3_CNTRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528CH 1      
+TIM3_CNTRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528DH 1      
+TIM3_PSCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528EH 1      
+TIM3_ARR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00528FH 2      
+TIM3_ARRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528FH 1      
+TIM3_ARRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005290H 1      
+TIM3_CCR1. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005291H 2      
+TIM3_CCR1H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005291H 1      
+TIM3_CCR1L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005292H 1      
+TIM3_CCR2. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005293H 2      
+TIM3_CCR2H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005293H 1      
+TIM3_CCR2L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005294H 1      
+TIM3_BKR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005295H 1      
+TIM3_OISR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005296H 1      
+TIM1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B0H 1      
+TIM1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B1H 1      
+TIM1_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B2H 1      
+TIM1_ETR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B3H 1      
+TIM1_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B4H 1      
+TIM1_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B5H 1      
+TIM1_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B6H 1      
+TIM1_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B7H 1      
+TIM1_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B8H 1      
+TIM1_CCMR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B9H 1      
+TIM1_CCMR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BAH 1      
+TIM1_CCMR3 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BBH 1      
+TIM1_CCMR4 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BCH 1      
+TIM1_CCER1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BDH 1      
+TIM1_CCER2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BEH 1      
+TIM1_CNTR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052BFH 2      
+TIM1_CNTRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BFH 1      
+TIM1_CNTRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C0H 1      
+TIM1_PSCR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C1H 2      
+TIM1_PSCRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C1H 1      
+TIM1_PSCRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C2H 1      
+TIM1_ARR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C3H 2      
+TIM1_ARRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C3H 1      
+TIM1_ARRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C4H 1      
+TIM1_RCR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C5H 1      
+TIM1_CCR1. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C6H 2      
+TIM1_CCR1H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C6H 1      
+TIM1_CCR1L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C7H 1      
+TIM1_CCR2. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C8H 2      
+TIM1_CCR2H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C8H 1      
+TIM1_CCR2L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C9H 1      
+TIM1_CCR3. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052CAH 2      
+TIM1_CCR3H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CAH 1      
+TIM1_CCR3L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CBH 1      
+TIM1_CCR4. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052CCH 2      
+TIM1_CCR4H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CCH 1      
+TIM1_CCR4L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CDH 1      
+TIM1_BKR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CEH 1      
+TIM1_DTR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CFH 1      
+TIM1_OISR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D0H 1      
+TIM1_DCR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D1H 1      
+TIM1_DCR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D2H 1      
+TIM1_DMAR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D3H 1      
+TIM4_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E0H 1      
+TIM4_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E1H 1      
+TIM4_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E2H 1      
+TIM4_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E3H 1      
+TIM4_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E4H 1      
+TIM4_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E5H 1      
+TIM4_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E6H 1      
+TIM4_CNTR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E7H 1      
+TIM4_PSCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E8H 1      
+TIM4_ARR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E9H 1      
+IR_CR. . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052FFH 1      
+ADC1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005340H 1      
+ADC1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005341H 1      
+ADC1_CR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005342H 1      
+ADC1_SR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005343H 1      
+ADC1_DR. . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005344H 2      
+ADC1_DRH . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005344H 1      
+ADC1_DRL . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005345H 1      
+ADC1_HTR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005346H 2      
+ADC1_HTRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005346H 1      
+ADC1_HTRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005347H 1      
+ADC1_LTR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005348H 2      
+ADC1_LTRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005348H 1      
+ADC1_LTRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005349H 1      
+ADC1_SQR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534AH 1      
+ADC1_SQR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534BH 1      
+ADC1_SQR3. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534CH 1      
+ADC1_SQR4. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534DH 1      
+ADC1_TRIGR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534EH 1      
+ADC1_TRIGR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534FH 1      
+ADC1_TRIGR3. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005350H 1      
+ADC1_TRIGR4. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005351H 1      
+DAC_CR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005380H 1      
+DAC_CR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005381H 1      
+DAC_SWTRIGR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005384H 1      
+DAC_SR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005385H 1      
+DAC_RDHR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005388H 2      
+DAC_RDHRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005388H 1      
+DAC_RDHRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005389H 1      
+DAC_LDHR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00538CH 2      
+DAC_LDHRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00538CH 1      
+DAC_LDHRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00538DH 1      
+DAC_DHR8 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005390H 1      
+DAC_DOR. . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0053ACH 2      
+DAC_DORH . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0053ACH 1      
+DAC_DORL . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0053ADH 1      
+RI_ICR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005431H 1      
+RI_ICR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005432H 1      
+RI_IOIR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005433H 1      
+RI_IOIR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005434H 1      
+RI_IOIR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005435H 1      
+RI_IOCMR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005436H 1      
+RI_IOCMR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005437H 1      
+RI_IOCMR3. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005438H 1      
+RI_IOSR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005439H 1      
+RI_IOSR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543AH 1      
+RI_IOSR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543BH 1      
+RI_IOGCR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543CH 1      
+RI_ASCR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543DH 1      
+RI_ASCR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543EH 1      
+RI_RCR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543FH 1      
+COMP_CSR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005440H 1      
+COMP_CSR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005441H 1      
+COMP_CSR3. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005442H 1      
+COMP_CSR4. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005443H 1      
+COMP_CSR5. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005444H 1      
+CFG_GCR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F60H 1      
+ITC_SPR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F70H 1      
+ITC_SPR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F71H 1      
+ITC_SPR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F72H 1      
+ITC_SPR4 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F73H 1      
+ITC_SPR5 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F74H 1      
+ITC_SPR6 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F75H 1      
+ITC_SPR7 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F76H 1      
+ITC_SPR8 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F77H 1      
+_fctptr_t. . . . . . . . . . . . . . .  TYPEDEF ------- PTR   -------      2
+_halt_ . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_jmp_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_nop_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_rim_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_sim_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_trap_ . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_wfe_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_wfi_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_getCC_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_setCC_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_getSP_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_setSP_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_swapbyte_ . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_swapnibble_ . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+DWORD. . . . . . . . . . . . . . . . .  TYPEDEF ------- ????? -------      4
+WORD . . . . . . . . . . . . . . . . .  TYPEDEF ------- U_CHAR  -------     2
+BYTE . . . . . . . . . . . . . . . . .  TYPEDEF ------- U_CHAR  -------     1
+delay. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+checkpacket. . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+handlecommand. . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+sendrequest. . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+CRC. . . . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+TxCRC. . . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+RxCRC. . . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+F_Comm . . . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+Command. . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+TuneMode . . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+F_Comm . . . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+Lister . . . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+COMMANDLIST. . . . . . . . . . . . . .  EXTERN  code    ARRAY   ------- -----
+TUNELIST . . . . . . . . . . . . . . .  EXTERN  code    ARRAY   ------- -----
+initUART . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+putpack. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+copypacket . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+clearRxBuff. . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+RxBuffer . . . . . . . . . . . . . . .  EXTERN  data    ARRAY   ------- -----
+TxBuffer . . . . . . . . . . . . . . .  EXTERN  data    ARRAY   ------- -----
+Comm_Len . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+RxStatus . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+RxCount. . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+plen . . . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+TxCount. . . . . . . . . . . . . . . .  EXTERN  data    U_CHAR  ------- -----
+TxPointer. . . . . . . . . . . . . . .  EXTERN  data    U_CHAR  ------- -----
+RxPointer. . . . . . . . . . . . . . .  EXTERN  data    U_CHAR  ------- -----
+TxBusy . . . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+initTIM2 . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initTIM3 . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+updateTIM3 . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+Tim2Flag . . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+Tim2Counter. . . . . . . . . . . . . .  EXTERN  page0   U_INT   ------- -----
+CommError. . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+ErrCounter . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+PARAMS . . . . . . . . . . . . . . . .  EXTERN  eeprom  ARRAY   ------- -----
+PASSWORD . . . . . . . . . . . . . . .  EXTERN  
+EEbuffer . . . . . . . . . . . . . . .  EXTERN  page0   ARRAY   ------- -----
+ee_read. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+ee_pgm . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+readparameters . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initIO . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+blink. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+LED_set. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+DE_set . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+CheckERF . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+compCRC. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+comp_crc . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+checkpacket. . . . . . . . . . . . . .  PUBLIC  CODE    PROC    ------- -----
+handlecommand. . . . . . . . . . . . .  PUBLIC  CODE    PROC    ------- -----
+checkEmptyID . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+checkpassword. . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+sendpacket . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+sendOKresponse . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+sendERRresponse. . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+sendrequest. . . . . . . . . . . . . .  PUBLIC  CODE    PROC    ------- -----
+CRC. . . . . . . . . . . . . . . . . .  PUBLIC  page0   U_CHAR  000000H 1      
+TxCRC. . . . . . . . . . . . . . . . .  PUBLIC  page0   U_CHAR  000001H 1      
+RxCRC. . . . . . . . . . . . . . . . .  PUBLIC  page0   U_CHAR  000002H 1      
+F_Comm . . . . . . . . . . . . . . . .  PUBLIC  bit     BIT     000000H 1      
+Command. . . . . . . . . . . . . . . .  PUBLIC  page0   U_CHAR  000003H 1      
+TuneMode . . . . . . . . . . . . . . .  PUBLIC  bit     BIT     000001H 1      
+F_Comm . . . . . . . . . . . . . . . .  PUBLIC  bit     BIT     000000H 1      
+Lister . . . . . . . . . . . . . . . .  PUBLIC  bit     BIT     000002H 1      
+COMMANDLIST. . . . . . . . . . . . . .  PUBLIC  code    ARRAY   000000H 8      
+TUNELIST . . . . . . . . . . . . . . .  PUBLIC  code    ARRAY   000008H 32     
+  i?113. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+  j?115. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+  i?117. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+  tmp?120. . . . . . . . . . . . . . .  PUBLIC  auto     BASE    000000H 4      
+  i?121. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+  tmp?122. . . . . . . . . . . . . . .  PUBLIC  auto     BASE    000000H 4      
+  i?123. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+  i?124. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+  i?127. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+  i?130. . . . . . . . . . . . . . . .  PUBLIC  auto    U_CHAR  000000H 1      
+TxBuffer . . . . . . . . . . . . . . .  EXTERN  data    ARRAY   ------- -----
+RxBuffer . . . . . . . . . . . . . . .  EXTERN  data    ARRAY   ------- -----
+CommError. . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+RxStatus . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+ErrCounter . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+CheckERF . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+PARAMS . . . . . . . . . . . . . . . .  EXTERN  eeprom  ARRAY   ------- -----
+EEbuffer . . . . . . . . . . . . . . .  EXTERN  page0   ARRAY   ------- -----
+PASSWORD . . . . . . . . . . . . . . .  EXTERN  
+RxPointer. . . . . . . . . . . . . . .  EXTERN  data    U_CHAR  ------- -----
+Tim2Flag . . . . . . . . . . . . . . .  EXTERN  bit     BIT     ------- -----
+RCSTM8 COMPILER V2.28.10.092
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   ----    ----
+   CONSTANT SIZE    =     40    ----
+   DATA SIZE        =   ----    ----
+   PAGE0 SIZE       =      4    ----
+   BIT SIZE         =      4    ----
+END OF MODULE INFORMATION.
+
+RCSTM8 COMPILATION COMPLETE.  1 WARNING, 15 ERROR S

@@ -1,0 +1,565 @@
+###############################################################################
+#                                                                             #
+# IAR C/C++ Compiler V6.12.1.50500 for Atmel AVR        11/Feb/2015  02:09:25 #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Source file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\kbd_drv.c     #
+#    Command line =  --string_literals_in_flash G:\Work\Projects\ATMEL\IAR\C\ #
+#                    MENU_TEMPLATE\kbd_drv.c --cpu=m32a -ms -o                #
+#                    G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\    #
+#                    -lCN G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Li #
+#                    st\ --initializers_in_flash --debug                      #
+#                    -DENABLE_BIT_DEFINITIONS -e --eeprom_size 1024 --clib    #
+#                    -Ohz                                                     #
+#    List file    =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\List\kb #
+#                    d_drv.lst                                                #
+#    Object file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\kbd #
+#                    _drv.r90                                                 #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\kbd_drv.c
+      1          //========================================================================
+      2          #include "kbd_drv.h"
+
+   \                                 In  segment ABSOLUTE, at 0x33
+   \   union <unnamed> volatile __io _A_PINC
+   \                     _A_PINC:
+   \   00000000                      DS8 1
+
+   \                                 In  segment ABSOLUTE, at 0x34
+   \   union <unnamed> volatile __io _A_DDRC
+   \                     _A_DDRC:
+   \   00000000                      DS8 1
+      3          //========================================================================
+      4          
+      5          //========================================================================
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+      6          u08 _kbd_drv;
+   \                     _kbd_drv:
+   \   00000000                      DS8 1
+   \   00000001                      DS8 1
+   \   00000002                      DS8 1
+   \   00000003                      DS8 1
+   \   00000004                      DS8 1
+      7          
+      8          static u08 keys_flags;
+      9          
+     10          static u08 keys_prev;
+     11          static u08 keys_curr;
+     12          
+     13          static u08 keys_buf;
+     14          //========================================================================
+     15          
+     16          #if (TYPE_KEYS==BUTTONS)
+     17          //========================================================================
+     18          void scan_keys (void)
+     19          {
+     20             if (keys_flags & (1<<KBD_DRV_RUN_FLG))
+     21             {
+     22                clrb (keys_flags, KEYS_PRESSED_FLG);
+     23          
+     24                u08 a;
+     25          
+     26                a = ~KEYS_PIN;
+     27                a &= KEYS_MASK;
+     28          
+     29                if (a != 0)
+     30                {
+     31                   setb (keys_flags, KEYS_PRESSED_FLG);
+     32                }
+     33          
+     34                keys_curr = a;
+     35             }
+     36          }
+     37          //------------------------------------------------------------------------
+     38          struct tab_keys_code __flash tab_kbd_drv_keys_code [] =
+     39          {
+     40             {KEY_ESC_BIT,     KEY_ESC_COD},
+     41             {KEY_ENTER_BIT,   KEY_ENTER_COD},
+     42             {KEY_UP_BIT,      KEY_UP_COD},
+     43             {KEY_DOWN_BIT,    KEY_DOWN_COD},
+     44             {KEY_PLUS_BIT,    KEY_PLUS_COD},
+     45             {KEY_MINUS_BIT,   KEY_MINUS_COD},
+     46             {0xFF,            0xFF},
+     47          };
+     48          //========================================================================
+     49          
+     50          #elif (TYPE_KEYS==MATRIX)
+     51          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     52          void scan_keys (void)
+   \                     scan_keys:
+     53          {
+     54             if (_kbd_drv != KBD_DRV_INIT)
+   \   00000000   9100....           LDS     R16, _kbd_drv
+   \   00000004   2300               TST     R16
+   \   00000006   F181               BREQ    ??scan_keys_0
+     55             {
+     56                clr_bit (keys_flags, KEYS_PRESSED_FLG);
+   \   00000008   ....               LDI     R30, LOW(_kbd_drv)
+   \   0000000A   ....               LDI     R31, (_kbd_drv) >> 8
+   \   0000000C   8101               LDD     R16, Z+1
+   \   0000000E   7F0E               ANDI    R16, 0xFE
+   \   00000010   8301               STD     Z+1, R16
+     57          
+     58                u08 a = 0xFF;
+   \   00000012   EF0F               LDI     R16, 255
+     59          
+     60                COL_DDR = COL_MASK;
+   \   00000014   EF10               LDI     R17, 240
+   \   00000016   BB14               OUT     0x14, R17
+     61             	asm("nop");
+   \   00000018   0000               nop
+     62             	asm("nop");
+   \   0000001A   0000               nop
+     63             	asm("nop");
+   \   0000001C   0000               nop
+     64             	asm("nop");
+   \   0000001E   0000               nop
+     65             	asm("nop");
+   \   00000020   0000               nop
+     66             	asm("nop");
+   \   00000022   0000               nop
+     67             	asm("nop");
+   \   00000024   0000               nop
+     68             	asm("nop");
+   \   00000026   0000               nop
+     69          
+     70             	if (!(ROW_PIN & (1<<ROW_1)))
+   \   00000028   9B98               SBIS    0x13, 0x00
+     71                   a &= (~(1<<7));
+   \   0000002A   E70F               LDI     R16, 127
+     72             	if (!(ROW_PIN & (1<<ROW_2)))
+   \                     ??scan_keys_1:
+   \   0000002C   9B99               SBIS    0x13, 0x01
+     73                   a &= (~(1<<6));
+   \   0000002E   7B0F               ANDI    R16, 0xBF
+     74             	if (!(ROW_PIN & (1<<ROW_3)))
+   \                     ??scan_keys_2:
+   \   00000030   9B9A               SBIS    0x13, 0x02
+     75                   a &= (~(1<<5));
+   \   00000032   7D0F               ANDI    R16, 0xDF
+     76             	if (!(ROW_PIN & (1<<ROW_4)))
+   \                     ??scan_keys_3:
+   \   00000034   9B9B               SBIS    0x13, 0x03
+     77                   a &= (~(1<<4));
+   \   00000036   7E0F               ANDI    R16, 0xEF
+     78          
+     79                ROW_DDR = ROW_MASK;
+   \                     ??scan_keys_4:
+   \   00000038   E01F               LDI     R17, 15
+   \   0000003A   BB14               OUT     0x14, R17
+     80             	asm("nop");
+   \   0000003C   0000               nop
+     81             	asm("nop");
+   \   0000003E   0000               nop
+     82             	asm("nop");
+   \   00000040   0000               nop
+     83             	asm("nop");
+   \   00000042   0000               nop
+     84             	asm("nop");
+   \   00000044   0000               nop
+     85             	asm("nop");
+   \   00000046   0000               nop
+     86             	asm("nop");
+   \   00000048   0000               nop
+     87             	asm("nop");
+   \   0000004A   0000               nop
+     88          
+     89             	if (!(COL_PIN & (1<<COL_1)))
+   \   0000004C   9B9C               SBIS    0x13, 0x04
+     90                   a &= (~(1<<3));
+   \   0000004E   7F07               ANDI    R16, 0xF7
+     91             	if (!(COL_PIN & (1<<COL_2)))
+   \                     ??scan_keys_5:
+   \   00000050   9B9D               SBIS    0x13, 0x05
+     92                   a &= (~(1<<2));
+   \   00000052   7F0B               ANDI    R16, 0xFB
+     93             	if (!(COL_PIN & (1<<COL_3)))
+   \                     ??scan_keys_6:
+   \   00000054   9B9E               SBIS    0x13, 0x06
+     94                   a &= (~(1<<1));
+   \   00000056   7F0D               ANDI    R16, 0xFD
+     95             	if (!(COL_PIN & (1<<COL_4)))
+   \                     ??scan_keys_7:
+   \   00000058   9B9F               SBIS    0x13, 0x07
+     96                   a &= (~(1<<0));
+   \   0000005A   7F0E               ANDI    R16, 0xFE
+     97          
+     98                if (a != 0xFF)
+   \                     ??scan_keys_8:
+   \   0000005C   3F0F               CPI     R16, 255
+   \   0000005E   F019               BREQ    ??scan_keys_9
+     99                   set_bit (keys_flags, KEYS_PRESSED_FLG);
+   \   00000060   8111               LDD     R17, Z+1
+   \   00000062   6011               ORI     R17, 0x01
+   \   00000064   8311               STD     Z+1, R17
+    100          
+    101                keys_curr = a;
+   \                     ??scan_keys_9:
+   \   00000066   8303               STD     Z+3, R16
+    102             }
+    103          }
+   \                     ??scan_keys_0:
+   \   00000068   9508               RET
+   \   0000006A                      REQUIRE _A_DDRC
+   \   0000006A                      REQUIRE _A_PINC
+    104          //------------------------------------------------------------------------
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    105          struct tab_key_cod __flash tab_kbd_drv_keys_cod [] =
+   \                     tab_kbd_drv_keys_cod:
+   \   00000000   01EE02ED03EB       DC8 238, 1, 237, 2, 235, 3, 222, 4, 221, 5, 219, 6, 190, 7, 189, 8, 187
+   \              04DE05DD06DB
+   \              07BE08BDBB  
+   \   00000011   7D09E700D70A       DC8 9, 125, 0, 231, 10, 215, 11, 183, 12, 119, 13, 126, 15, 123, 14
+   \              B70B770C7E0D
+   \              7B0F0E      
+   \   00000020   FFFF               DC8 255, 255
+    106          {
+    107             {KEY_ONE,     KEY_ONE_COD},
+    108             {KEY_TWO,     KEY_TWO_COD},
+    109             {KEY_THREE,   KEY_THREE_COD},
+    110             {KEY_FOUR,    KEY_FOUR_COD},
+    111             {KEY_FIVE,    KEY_FIVE_COD},
+    112             {KEY_SIX,     KEY_SIX_COD},
+    113             {KEY_SEVEN,   KEY_SEVEN_COD},
+    114             {KEY_EIGHT,   KEY_EIGHT_COD},
+    115             {KEY_NINE,    KEY_NINE_COD},
+    116             {KEY_ZERO,    KEY_ZERO_COD},
+    117          
+    118             {KEY_A,       KEY_ESC_COD},
+    119             {KEY_B,       KEY_ENTER_COD},
+    120             {KEY_C,       KEY_PREV_COD},
+    121             {KEY_D,       KEY_NEXT_COD},
+    122          
+    123             {KEY_STAR,    KEY_MINUS_COD},
+    124             {KEY_LATTICE, KEY_PLUS_COD},
+    125             {0xFF,        0xFF},
+    126          };
+    127          //========================================================================
+    128          #endif
+    129          
+    130          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    131          void kbd_drv (void)
+   \                     kbd_drv:
+    132          {
+   \   00000000   93BA               ST      -Y, R27
+   \   00000002   93AA               ST      -Y, R26
+    133             scan_keys ();
+   \   00000004   ....               RCALL   scan_keys
+    134          
+    135             switch (_kbd_drv)
+   \   00000006   ....               LDI     R26, LOW(_kbd_drv)
+   \   00000008   ....               LDI     R27, (_kbd_drv) >> 8
+   \   0000000A   9100....           LDS     R16, (_kbd_drv + 3)
+   \   0000000E   9110....           LDS     R17, _kbd_drv
+   \   00000012   2311               TST     R17
+   \   00000014   F069               BREQ    ??kbd_drv_0
+   \   00000016   951A               DEC     R17
+   \   00000018   F079               BREQ    ??kbd_drv_1
+   \   0000001A   951A               DEC     R17
+   \   0000001C   F0B1               BREQ    ??kbd_drv_2
+   \   0000001E   951A               DEC     R17
+   \   00000020   F139               BREQ    ??kbd_drv_3
+   \   00000022   951A               DEC     R17
+   \   00000024   F129               BREQ    ??kbd_drv_3
+   \   00000026   951A               DEC     R17
+   \   00000028   F199               BREQ    ??kbd_drv_4
+   \   0000002A   951A               DEC     R17
+   \   0000002C   F1C1               BREQ    ??kbd_drv_5
+   \   0000002E   C042               RJMP    ??kbd_drv_6
+    136             {
+    137                case KBD_DRV_INIT:
+    138                   #if (TYPE_KEYS==BUTTONS)
+    139                   KEYS_PIN = KEYS_MASK;
+    140                   #endif
+    141          
+    142                   keys_prev = 0xFF;
+   \                     ??kbd_drv_0:
+   \   00000030   EF0F               LDI     R16, 255
+   \   00000032   9300....           STS     (_kbd_drv + 2), R16
+   \   00000036   C039               RJMP    ??kbd_drv_7
+    143          //         keys_buf = 0xFF;
+    144          
+    145                   _kbd_drv = KBD_DRV_NONE;
+    146                   break;
+    147          
+    148                case KBD_DRV_NONE:
+    149                   if (keys_flags & (1<<KEYS_PRESSED_FLG))
+   \                     ??kbd_drv_1:
+   \   00000038   9611               ADIW    R27:R26, 1
+   \   0000003A   911C               LD      R17, X
+   \   0000003C   FF10               SBRS    R17, 0
+   \   0000003E   C03A               RJMP    ??kbd_drv_6
+    150                   {
+    151                      keys_prev = keys_curr;
+   \   00000040   9300....           STS     (_kbd_drv + 2), R16
+    152                      set_timer (ST_KBD_1, NO_RERUN_TIMER, DEBOUNCE_DELAY);
+   \   00000044   ....               RCALL   ?Subroutine1
+    153                      _kbd_drv = KBD_DRV_DOWN;
+   \                     ??CrossCallReturnLabel_8:
+   \   00000046   E002               LDI     R16, 2
+   \   00000048   C033               RJMP    ??kbd_drv_8
+    154                   }
+    155                   break;
+    156          
+    157                case KBD_DRV_DOWN:
+    158                   if (wait (ST_KBD_1))
+   \                     ??kbd_drv_2:
+   \   0000004A   ....               RCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_2:
+   \   0000004C   F199               BREQ    ??kbd_drv_6
+    159                   {
+    160                      if (keys_flags & (1<<KEYS_PRESSED_FLG) && keys_prev == keys_curr)
+   \   0000004E   9611               ADIW    R27:R26, 1
+   \   00000050   910C               LD      R16, X
+   \   00000052   9711               SBIW    R27:R26, 1
+   \   00000054   FF00               SBRS    R16, 0
+   \   00000056   C029               RJMP    ??kbd_drv_7
+   \   00000058   9100....           LDS     R16, (_kbd_drv + 2)
+   \   0000005C   9110....           LDS     R17, (_kbd_drv + 3)
+   \   00000060   1701               CP      R16, R17
+   \   00000062   F519               BRNE    ??kbd_drv_7
+    161                      {
+    162                         if (define_key_cod (keys_curr, keys_buf, tab_kbd_drv_keys_cod))
+   \   00000064   ....               RCALL   ?Subroutine0
+    163                            Set_Event (EV_ID_KEY_PRESSED, SET_CLR_EVENT);
+    164          
+    165                         set_timer (ST_KBD_1, NO_RERUN_TIMER, HOLD_DELAY);
+   \                     ??CrossCallReturnLabel_0:
+   \   00000066   ED2C               LDI     R18, 220
+   \   00000068   E035               LDI     R19, 5
+   \   0000006A   ....               RCALL   ??Subroutine4_0
+    166                         _kbd_drv = KBD_DRV_HOLD; // KBD_DRV_WAIT_UP;
+   \                     ??CrossCallReturnLabel_5:
+   \   0000006C   E003               LDI     R16, 3
+   \   0000006E   C020               RJMP    ??kbd_drv_8
+    167                      }
+    168                      else
+    169                      _kbd_drv = KBD_DRV_NONE;
+    170                   }
+    171                   break;
+    172          
+    173                case KBD_DRV_HOLD:
+    174                case KBD_DRV_REPEAT:
+    175                   if (!(keys_flags & (1<<KEYS_PRESSED_FLG)))
+   \                     ??kbd_drv_3:
+   \   00000070   9611               ADIW    R27:R26, 1
+   \   00000072   911C               LD      R17, X
+   \   00000074   9711               SBIW    R27:R26, 1
+   \   00000076   FF10               SBRS    R17, 0
+   \   00000078   C01A               RJMP    ??kbd_drv_9
+    176                   {
+    177                      _kbd_drv = KBD_DRV_WAIT_UP;
+    178                      return;
+    179                   }
+    180          
+    181                   if (keys_prev != keys_curr)
+   \   0000007A   9110....           LDS     R17, (_kbd_drv + 2)
+   \   0000007E   1710               CP      R17, R16
+   \   00000080   F4A1               BRNE    ??kbd_drv_7
+    182                   {
+    183                      _kbd_drv = KBD_DRV_NONE;
+    184                      return;
+    185                   }
+    186          
+    187                   if (wait (ST_KBD_1))
+   \   00000082   ....               RCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_3:
+   \   00000084   F0B9               BREQ    ??kbd_drv_6
+    188                   {
+    189                      if (define_key_cod (keys_curr, keys_buf, tab_kbd_drv_keys_cod))
+   \   00000086   ....               RCALL   ?Subroutine0
+    190                         Set_Event (EV_ID_KEY_PRESSED, SET_CLR_EVENT);
+    191          
+    192                      set_timer (ST_KBD_1, NO_RERUN_TIMER, REPEAT_DELAY);
+   \                     ??CrossCallReturnLabel_1:
+   \   00000088   E72D               LDI     R18, 125
+   \   0000008A   ....               RCALL   ??Subroutine3_0
+    193                      _kbd_drv = KBD_DRV_REPEAT;
+   \                     ??CrossCallReturnLabel_6:
+   \   0000008C   E004               LDI     R16, 4
+   \   0000008E   C010               RJMP    ??kbd_drv_8
+    194                   }
+    195                   break;
+    196          
+    197                case KBD_DRV_WAIT_UP:
+    198                   if (!(keys_flags & (1<<KEYS_PRESSED_FLG)))
+   \                     ??kbd_drv_4:
+   \   00000090   9611               ADIW    R27:R26, 1
+   \   00000092   910C               LD      R16, X
+   \   00000094   FD00               SBRC    R16, 0
+   \   00000096   C00E               RJMP    ??kbd_drv_6
+    199                   {
+    200                       set_timer (ST_KBD_1, NO_RERUN_TIMER, DEBOUNCE_DELAY);
+   \   00000098   ....               RCALL   ?Subroutine1
+    201                       _kbd_drv = KBD_DRV_UP;
+   \                     ??CrossCallReturnLabel_7:
+   \   0000009A   E006               LDI     R16, 6
+   \   0000009C   C009               RJMP    ??kbd_drv_8
+    202                   }
+    203                   break;
+    204          
+    205                case KBD_DRV_UP:
+    206                   if (wait (ST_KBD_1))
+   \                     ??kbd_drv_5:
+   \   0000009E   ....               RCALL   ?Subroutine2
+   \                     ??CrossCallReturnLabel_4:
+   \   000000A0   F049               BREQ    ??kbd_drv_6
+    207                   {
+    208                      if (!(keys_flags & (1<<KEYS_PRESSED_FLG)))
+   \   000000A2   9611               ADIW    R27:R26, 1
+   \   000000A4   910C               LD      R16, X
+   \   000000A6   FD00               SBRC    R16, 0
+   \   000000A8   C002               RJMP    ??kbd_drv_9
+    209                         _kbd_drv = KBD_DRV_NONE;
+   \                     ??kbd_drv_7:
+   \   000000AA   E001               LDI     R16, 1
+   \   000000AC   C001               RJMP    ??kbd_drv_8
+    210                   else
+    211                         _kbd_drv = KBD_DRV_WAIT_UP;
+   \                     ??kbd_drv_9:
+   \   000000AE   E005               LDI     R16, 5
+   \                     ??kbd_drv_8:
+   \   000000B0   9300....           STS     _kbd_drv, R16
+   \                     ??kbd_drv_6:
+   \   000000B4   91A9               LD      R26, Y+
+   \   000000B6   91B9               LD      R27, Y+
+   \   000000B8   9508               RET
+    212                   }
+    213                   break;
+    214          
+    215                default:
+    216                   break;
+    217             }
+    218          }
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine2:
+   \   00000000   E000               LDI     R16, 0
+   \   00000002   ........           CALL    wait
+   \   00000006   2300               TST     R16
+   \   00000008   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine1:
+   \   00000000   E124               LDI     R18, 20
+   \   00000002                      REQUIRE ??Subroutine3_0
+   \   00000002                      ;               // Fall through to label ??Subroutine3_0
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ??Subroutine3_0:
+   \   00000000   E030               LDI     R19, 0
+   \   00000002                      REQUIRE ??Subroutine4_0
+   \   00000002                      ;               // Fall through to label ??Subroutine4_0
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ??Subroutine4_0:
+   \   00000000   E010               LDI     R17, 0
+   \   00000002   E000               LDI     R16, 0
+   \   00000004   ........           JMP     set_timer
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine0:
+   \   00000000   ....               LDI     R20, LOW(tab_kbd_drv_keys_cod)
+   \   00000002   ....               LDI     R21, (tab_kbd_drv_keys_cod) >> 8
+   \   00000004   ....               LDI     R18, ((_kbd_drv + 4) & 0xff) & 0xFF
+   \   00000006   ....               LDI     R19, (((_kbd_drv + 4) >> 8) & 0xff) & 0xFF
+   \   00000008   9613               ADIW    R27:R26, 3
+   \   0000000A   018D               MOVW    R17:R16, R27:R26
+   \   0000000C   ........           CALL    define_key_cod_1
+   \   00000010   2300               TST     R16
+   \   00000012   F021               BREQ    ??Subroutine0_0
+   \   00000014   E011               LDI     R17, 1
+   \   00000016   E000               LDI     R16, 0
+   \   00000018   ........           CALL    Set_Event
+   \                     ??Subroutine0_0:
+   \   0000001C   9508               RET
+    219          //========================================================================
+    220          
+    221          //========================================================================
+    222          /*
+    223          u08 get_key (u08 key)
+    224          {
+    225             u08 tmp_key = keys_buf;
+    226          
+    227             if (tmp_key != 0xFF)
+    228             {
+    229                if (tmp_key == key)
+    230                {
+    231                   keys_buf = 0xFF;
+    232                   return 1;
+    233                }
+    234             }
+    235          
+    236             return 0;
+    237          }
+    238          */
+    239          
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    240          u08 GetKeyCode (void)
+   \                     GetKeyCode:
+    241          {
+    242             return keys_buf;
+   \   00000000   9100....           LDS     R16, (_kbd_drv + 4)
+   \   00000004   9508               RET
+    243          }
+    244          //========================================================================
+
+   Maximum stack usage in bytes:
+
+   CSTACK RSTACK Function
+   ------ ------ --------
+       0      2  GetKeyCode
+       2      2  kbd_drv
+                   2 2 -> Set_Event
+                   2 2 -> define_key_cod_1
+                   2 2 -> scan_keys
+                   2 2 -> set_timer
+                   2 2 -> wait
+       0      2  scan_keys
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ??Subroutine3_0
+       8  ??Subroutine4_0
+      30  ?Subroutine0
+       2  ?Subroutine1
+      10  ?Subroutine2
+       6  GetKeyCode
+       1  _A_DDRC
+       1  _A_PINC
+       5  _kbd_drv
+          keys_flags
+          keys_prev
+          keys_curr
+          keys_buf
+     186  kbd_drv
+     106  scan_keys
+      34  tab_kbd_drv_keys_cod
+       6  -- Other
+
+ 
+   2 bytes in segment ABSOLUTE
+ 350 bytes in segment CODE
+   6 bytes in segment INITTAB
+  34 bytes in segment NEAR_F
+   5 bytes in segment NEAR_Z
+ 
+ 384 bytes of CODE memory (+ 6 bytes shared)
+   5 bytes of DATA memory (+ 2 bytes shared)
+
+Errors: none
+Warnings: none

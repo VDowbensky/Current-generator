@@ -1,0 +1,53 @@
+###############################################################################
+#                                                                             #
+# IAR C/C++ Compiler V6.12.1.50500 for Atmel AVR        11/Feb/2015  02:09:28 #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Source file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\proc_termopla #
+#                    st.c                                                     #
+#    Command line =  --string_literals_in_flash G:\Work\Projects\ATMEL\IAR\C\ #
+#                    MENU_TEMPLATE\proc_termoplast.c --cpu=m32a -ms -o        #
+#                    G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\    #
+#                    -lCN G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Li #
+#                    st\ --initializers_in_flash --debug                      #
+#                    -DENABLE_BIT_DEFINITIONS -e --eeprom_size 1024 --clib    #
+#                    -Ohz                                                     #
+#    List file    =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\List\pr #
+#                    oc_termoplast.lst                                        #
+#    Object file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\pro #
+#                    c_termoplast.r90                                         #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\proc_termoplast.c
+      1          //========================================================================
+      2          #include "proc_termoplast.h"
+      3          //========================================================================
+      4          
+      5          //========================================================================
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+      6          u08 termoplast_mode;
+   \                     termoplast_mode:
+   \   00000000                      DS8 1
+      7          //========================================================================
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       1  termoplast_mode
+       6  -- Other
+
+ 
+ 6 bytes in segment INITTAB
+ 1 byte  in segment NEAR_Z
+ 
+ 0 bytes of CODE memory (+ 6 bytes shared)
+ 1 byte  of DATA memory
+
+Errors: none
+Warnings: none

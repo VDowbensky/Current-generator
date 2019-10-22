@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+  <CurrentConfigs><Project>menu_template/Debug</Project></CurrentConfigs></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>193</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+    <Build><ColumnWidth0>20</ColumnWidth0><ColumnWidth1>916</ColumnWidth1><ColumnWidth2>244</ColumnWidth2><ColumnWidth3>61</ColumnWidth3></Build><Find-in-Files><ColumnWidth0>440</ColumnWidth0><ColumnWidth1>62</ColumnWidth1><ColumnWidth2>754</ColumnWidth2></Find-in-Files></Static>
+    <Windows>
+      
+    <Wnd2>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-20169-30522</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>menu_template</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd2><Wnd3><Tabs><Tab><Identity>TabID-19922-26957</Identity><TabName>Build</TabName><Factory>Build</Factory><Session/></Tab><Tab><Identity>TabID-28411-22897</Identity><TabName>Find in Files</TabName><Factory>Find-in-Files</Factory><Session/></Tab></Tabs><SelectedTab>0</SelectedTab></Wnd3></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\main.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\main_def_func.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>2897</SelStart><SelEnd>2897</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\main_def_func.h</Filename><XPos>0</XPos><YPos>75</YPos><SelStart>123</SelStart><SelEnd>123</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\menu.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>2264</SelStart><SelEnd>2306</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\menu.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>3089</SelStart><SelEnd>3089</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\tui_service.c</Filename><XPos>0</XPos><YPos>282</YPos><SelStart>11913</SelStart><SelEnd>11913</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\tui_service.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>3187</SelStart><SelEnd>3187</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\_tui_service_main.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>430</SelStart><SelEnd>457</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\typedef.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>38</SelStart><SelEnd>58</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\kbd_drv.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\proc_termoplast.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\proc_termoplast.h</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>0</SelStart><SelEnd>0</SelEnd></Tab><ActiveTab>11</ActiveTab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-01349038><key>iaridepm.enu1</key></Toolbar-01349038></Sizes></Row0></Top><Left><Row0><Sizes><Wnd2><Rect><Top>-2</Top><Left>-2</Left><Bottom>598</Bottom><Right>267</Right><x>-2</x><y>-2</y><xscreen>269</xscreen><yscreen>280</yscreen><sizeHorzCX>210156</sizeHorzCX><sizeHorzCY>283976</sizeHorzCY><sizeVertCX>210156</sizeVertCX><sizeVertCY>608519</sizeVertCY></Rect></Wnd2></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd3><Rect><Top>-2</Top><Left>-2</Left><Bottom>344</Bottom><Right>1282</Right><x>-2</x><y>-2</y><xscreen>1284</xscreen><yscreen>346</yscreen><sizeHorzCX>1003125</sizeHorzCX><sizeHorzCY>350913</sizeHorzCY><sizeVertCX>210156</sizeVertCX><sizeVertCY>283976</sizeVertCY></Rect></Wnd3></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+

@@ -1,0 +1,657 @@
+RCSTM8 COMPILER V2.28.10.092,  MAIN               11/19/17  11:50:19
+
+QCW(0x009638A0)
+
+RCSTM8 COMPILER V2.28.10.092, COMPILATION OF MODULE MAIN      
+OBJECT MODULE PLACED IN Debug\main.o
+COMPILER INVOKED BY: OBJECT(Debug\main.o) PIN(C:\Program Files (x86)\Raisonance\Ride\inc\STM8) PIN(C:\Program Files (x86)\Raisonance\Ride\inc\ST7) PIN(C:\Program Files (x86)\Raisonance\Ride\inc) WRV(0) STM8(SMALL) DEBUG DGC(page0) AUTO OT(0) PR(Debug\main.lst) CD CO SB LAOB 
+
+stmt level    source
+   1          
+   2          /* MAIN.C file
+   3           * 
+   4           * Copyright (c) 2002-2005 STMicroelectronics
+   5           */
+   6          #include <STM8\STM8L151K6.h>
+   7          #include <intrins.h>
+   8          //#include <string.h>
+   9          #include "global.h"
+  10          #include "timers.h"
+  11          #include "gpio.h"
+  12          #include "ecma0896.h"
+  13          #include "dac.h"
+  14          //#include "usart.h"
+  15          //#include "ATcommands.h"
+  16          
+  17          void handleKBD (void);
+  18          
+  19          void main (void)
+  20          {	
+  21   1      	CLK_CKDIVR = 0;
+  22   1      	initIO();
+  23   1      	
+  24   1      	CLK_PCKENR1 = 0b10100011;//switch clock to DAC, USART, timer 2 & timer 3
+  25   1      	CLK_PCKENR2 = 0;
+  26   1      
+  27   1      //	readparameters();
+  28   1      //	initUART();
+  29   1      	initTIM2();
+  30   1      //	initPWM();
+  31   1      	#ifdef _LCD
+       1      	initLCD();
+       1      	#endif
+  34   1      	delay(50);
+  35   1      //	LED=1;
+  36   1      	_rim_ ();
+  37   1      
+  38   1      	cls();
+  39   1      	lcdprintstr ("PWM CG v1.00", 1);
+  40   1      	lcdprintstr ("Press start!", 2);
+  41   1      	lcdprintstr ("C.meas: 0.00", 3);
+  42   1      	lcdprintstr ("V.meas: 0.00", 4);
+  43   1      
+  44   1      	//for debug only
+  45   1      //	putstr ("Hello, Lamer! Let's fuck chinese pirates!");
+  46   1      //	initADC();
+  47   1      	initDAC();
+  48   1      	//LED=0;
+  49   1      	//main loop. Here are performed following procedures:
+  50   1      	//checking command from RS232;
+  51   1      	//checking keyboard code;
+  52   1      	//updating actual current value if needed;
+  53   1      	//reading ADC & convert it's data to actual outputs and cuttent voltage;
+  54   1      	//checking output current, setting overcurrent or undercurrent flag if needed;
+  55   1      	//updating DAC if needed;
+  56   1      	//updating LED's if needed;
+  57   1      	//updating LCD if needed;
+  58   1      	while (1)
+  59   1      		{
+  60   2      //				if (F_Comm) handlecommand();
+  61   2      				if (Key) handleKBD();
+  62   2      //				if (F_Curr) updateDAC();
+  63   2      //				if (F_ADC) readADC();
+  64   2      //				if (F_Under) undercurrentalarm();
+  65   2      //				if (F_Over) overcurrentalarm();
+  66   2      				
+  67   2      		}
+  68   1      
+  69   1      }
+  70          
+  71          void handleKBD (void)
+  72          {
+  73   1      		switch(Key)
+  74   1      		{
+  75   2      			case KEY_UP:
+  76   2      			break;
+  77   2      			
+  78   2      			case KEY_DOWN:
+  79   2      			break;
+  80   2      			
+  81   2      			case KEY_LEFT:
+  82   2      			break;
+  83   2      			
+  84   2      			case KEY_RIGHT:
+  85   2      			break;
+  86   2      			
+  87   2      			case KEY_ENTER:
+  88   2      			break;
+  89   2      			
+  90   2      			default:
+  91   2      			break;
+  92   2      			
+  93   2      		}
+  94   1      		Key = 0;
+  95   1      }
+  96          
+  97          
+  98          
+  99          
+ 100          
+ 101          
+ 102          void delay(WORD msec)	
+ 103          {
+ 104   1        WORD del = 0;
+ 105   1        while(msec)									// delay till msec is 0
+ 106   1        {
+ 107   2          for(del = 0; del < 1000; del++);		// 1 msec delay, m.b. corrected according to FCPU!
+ 108   2          msec--;										// decrement msec
+ 109   2        }
+ 110   1      }
+ 111          
+RCSTM8 COMPILER V2.28.10.092
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+              ; FUNCTION main (BEGIN)
+              ; SOURCE LINE # 21 
+0000 350050C0                          MOV    CLK_CKDIVR,#000H
+              ; SOURCE LINE # 22 
+0004 CD0000     F                      CALL   ?initIO
+              ; SOURCE LINE # 24 
+0007 35A350C3                          MOV    CLK_PCKENR1,#0A3H
+              ; SOURCE LINE # 25 
+000B 350050C4                          MOV    CLK_PCKENR2,#000H
+              ; SOURCE LINE # 29 
+000F CD0000     F                      CALL   ?initTIM2
+              ; SOURCE LINE # 34 
+0012 AE0032                            LDW    X,#00032H
+0015 CD0000     F                      CALL   ?delay
+              ; SOURCE LINE # 36 
+0018 9A                                RIM    
+              ; SOURCE LINE # 38 
+0019 CD0000     F                      CALL   ?cls
+              ; SOURCE LINE # 39 
+001C AE0000     F                      LDW    X,#HIGH(?STR?MAIN?BASE)
+001F A601                              LD     A,#001H
+0021 CD0000     F                      CALL   ?lcdprintstr
+              ; SOURCE LINE # 40 
+0024 AE0000     F                      LDW    X,#HIGH(?STR?MAIN?BASE + 00DH)
+0027 A602                              LD     A,#002H
+0029 CD0000     F                      CALL   ?lcdprintstr
+              ; SOURCE LINE # 41 
+002C AE0000     F                      LDW    X,#HIGH(?STR?MAIN?BASE + 01AH)
+002F A603                              LD     A,#003H
+0031 CD0000     F                      CALL   ?lcdprintstr
+              ; SOURCE LINE # 42 
+0034 AE0000     F                      LDW    X,#HIGH(?STR?MAIN?BASE + 027H)
+0037 A604                              LD     A,#004H
+0039 CD0000     F                      CALL   ?lcdprintstr
+              ; SOURCE LINE # 47 
+003C CD0000     F                      CALL   ?initDAC
+003F         ?WHILE_0001:
+              ; SOURCE LINE # 61 
+003F 3D00       F                      TNZ    Key
+0041 2703                              JREQ   ?NXT_0003
+0043 CD0000     F                      CALL   ?handleKBD
+0046         ?NXT_0003:
+0046 20F7                              JRA    ?WHILE_0001
+0048         ?NXT_0002:
+
+0048         ?EPILOG_0000:
+0048 81                                RET    
+
+              ; FUNCTION main (END)
+
+              ; FUNCTION ?handleKBD (BEGIN)
+              ; SOURCE LINE # 73 
+0000 450003     F                      MOV    ?BH,Key
+0003 B603       F                      LD     A,?BH
+0005 A001                              SUB    A,#001H
+0007 270E                              JREQ   ?CASE_0005
+0009 4A                                DEC    A
+000A 270D                              JREQ   ?CASE_0006
+000C 4A                                DEC    A
+000D 270C                              JREQ   ?CASE_0007
+000F 4A                                DEC    A
+0010 270B                              JREQ   ?CASE_0008
+0012 4A                                DEC    A
+0013 270A                              JREQ   ?CASE_0009
+0015         ?LAB_0001:
+0015 200A                              JRA    ?DEFAULT_0001
+0017         ?CASE_0005:
+              ; SOURCE LINE # 76 
+0017 200A                              JRA    ?NXT_0005
+0019         ?CASE_0006:
+              ; SOURCE LINE # 79 
+0019 2008                              JRA    ?NXT_0005
+001B         ?CASE_0007:
+              ; SOURCE LINE # 82 
+001B 2006                              JRA    ?NXT_0005
+001D         ?CASE_0008:
+              ; SOURCE LINE # 85 
+001D 2004                              JRA    ?NXT_0005
+001F         ?CASE_0009:
+              ; SOURCE LINE # 88 
+001F 2002                              JRA    ?NXT_0005
+0021         ?DEFAULT_0001:
+              ; SOURCE LINE # 91 
+0021 2000                              JRA    ?NXT_0005
+0023         ?NXT_0005:
+              ; SOURCE LINE # 94 
+0023 35000000   F                      MOV    Key,#000H
+0027         ?EPILOG_0001:
+0027 81                                RET    
+
+              ; FUNCTION ?handleKBD (END)
+
+              ; FUNCTION ?delay (BEGIN)
+              ; Register-parameter msec (XW) is relocated (auto)
+              ; SOURCE LINE # 102 
+0000 89                                PUSHW  X
+0001 89                                PUSHW  X
+              ; SOURCE LINE # 104 
+0002 AE0000                            LDW    X,#00000H
+0005 1F01       F                      LDW    (001H,SP),X   ; [ del ]
+0007         ?WHILE_0003:
+              ; SOURCE LINE # 105 
+0007 1E03       F                      LDW    X,(003H,SP)   ; [ msec ]
+0009 2719                              JREQ   ?NXT_0009
+              ; SOURCE LINE # 107 
+000B AE0000                            LDW    X,#00000H
+000E 1F01       F                      LDW    (001H,SP),X   ; [ del ]
+0010         ?FOR_0001:
+
+0010         ?NXT_0011:
+0010 1E01       F                      LDW    X,(001H,SP)   ; [ del ]
+0012 5C                                INCW   X
+0013 1F01       F                      LDW    (001H,SP),X   ; [ del ]
+0015 5A                                DECW   X
+0016 AE03E8                            LDW    X,#003E8H
+0019 1301       F                      CPW    X,(001H,SP)   ; [ del ]
+001B 22F3                              JRUGT  ?FOR_0001
+001D         ?NXT_0010:
+              ; SOURCE LINE # 108 
+001D 1E03       F                      LDW    X,(003H,SP)   ; [ msec ]
+001F 5A                                DECW   X
+0020 1F03       F                      LDW    (003H,SP),X   ; [ msec ]
+0022 20E3                              JRA    ?WHILE_0003
+0024         ?NXT_0009:
+
+0024         ?EPILOG_0002:
+0024 5B04                              ADD    SP,#004H
+0026 81                                RET    
+              ; msec         unsigned short  (size=2-Alg).  parameter in AUTO
+              ; del          unsigned short  (size=2-Alg). Automatic variable  in AUTO
+
+              ; FUNCTION ?delay (END)
+
+RCSTM8 COMPILER V2.28.10.092
+NAME                                    CLASS   MSPACE  TYPE    OFFSET  SIZE
+====                                    =====   ======  ====    ======  ====
+
+PA_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005000H 1      
+PA_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005001H 1      
+PA_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005002H 1      
+PA_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005003H 1      
+PA_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005004H 1      
+PB_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005005H 1      
+PB_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005006H 1      
+PB_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005007H 1      
+PB_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005008H 1      
+PB_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005009H 1      
+PC_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500AH 1      
+PC_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500BH 1      
+PC_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500CH 1      
+PC_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500DH 1      
+PC_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500EH 1      
+PD_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00500FH 1      
+PD_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005010H 1      
+PD_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005011H 1      
+PD_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005012H 1      
+PD_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005013H 1      
+PE_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005014H 1      
+PE_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005015H 1      
+PE_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005016H 1      
+PE_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005017H 1      
+PE_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005018H 1      
+PF_ODR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005019H 1      
+PF_IDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501AH 1      
+PF_DDR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501BH 1      
+PF_CR1 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501CH 1      
+PF_CR2 . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00501DH 1      
+FLASH_CR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005050H 1      
+FLASH_CR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005051H 1      
+FLASH_PUKR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005052H 1      
+FLASH_DUKR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005053H 1      
+FLASH_IAPSR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005054H 1      
+DMA1_GCSR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005070H 1      
+DMA1_GIR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005071H 1      
+DMA1_C0CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005075H 1      
+DMA1_C0SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005076H 1      
+DMA1_C0NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005077H 1      
+DMA1_C0PAR . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005078H 2      
+DMA1_C0PARH. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005078H 1      
+DMA1_C0PARL. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005079H 1      
+DMA1_C0M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00507BH 2      
+DMA1_C0M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00507BH 1      
+DMA1_C0M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00507CH 1      
+DMA1_C1CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00507FH 1      
+DMA1_C1SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005080H 1      
+DMA1_C1NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005081H 1      
+DMA1_C1PAR . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005082H 2      
+DMA1_C1PARH. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005082H 1      
+DMA1_C1PARL. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005083H 1      
+DMA1_C1M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005085H 2      
+DMA1_C1M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005085H 1      
+DMA1_C1M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005086H 1      
+DMA1_C2CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005089H 1      
+DMA1_C2SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508AH 1      
+DMA1_C2NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508BH 1      
+DMA1_C2PAR . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00508CH 2      
+DMA1_C2PARH. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508CH 1      
+DMA1_C2PARL. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508DH 1      
+DMA1_C2M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00508FH 2      
+DMA1_C2M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00508FH 1      
+DMA1_C2M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005090H 1      
+DMA1_C3CR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005093H 1      
+DMA1_C3SPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005094H 1      
+DMA1_C3NDTR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005095H 1      
+DMA1_C3PAR_C3M1AR. . . . . . . . . . .  HREG16   hreg16  U_INT   005096H 2      
+DMA1_C3PARH_C3M1ARH. . . . . . . . . .  HREG     hreg    U_CHAR  005096H 1      
+DMA1_C3PARL_C3M1ARL. . . . . . . . . .  HREG     hreg    U_CHAR  005097H 1      
+DMA1_C3M0AR. . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005099H 2      
+DMA1_C3M0ARH . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005099H 1      
+DMA1_C3M0ARL . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00509AH 1      
+SYSCFG_RMPCR1. . . . . . . . . . . . .  HREG     hreg    U_CHAR  00509EH 1      
+SYSCFG_RMPCR2. . . . . . . . . . . . .  HREG     hreg    U_CHAR  00509FH 1      
+EXTI_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A0H 1      
+EXTI_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A1H 1      
+EXTI_CR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A2H 1      
+EXTI_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A3H 1      
+EXTI_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A4H 1      
+EXTI_CONF. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A5H 1      
+WFE_CR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A6H 1      
+WFE_CR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A7H 1      
+WFE_CR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050A8H 1      
+RST_CR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B0H 1      
+RST_SR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B1H 1      
+PWR_CSR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B2H 1      
+PWR_CSR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050B3H 1      
+CLK_CKDIVR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C0H 1      
+CLK_CRTCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C1H 1      
+CLK_ICKCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C2H 1      
+CLK_PCKENR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C3H 1      
+CLK_PCKENR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C4H 1      
+CLK_CCOR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C5H 1      
+CLK_ECKCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C6H 1      
+CLK_SCSR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C7H 1      
+CLK_SWR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C8H 1      
+CLK_SWCR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050C9H 1      
+CLK_CSSR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CAH 1      
+CLK_CBEEPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CBH 1      
+CLK_HSICALR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CCH 1      
+CLK_HSITRIMR . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CDH 1      
+CLK_HSIUNLCKR. . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CEH 1      
+CLK_REGCSR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050CFH 1      
+WWDG_CR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050D3H 1      
+WWDG_WR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050D4H 1      
+IWDG_KR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050E0H 1      
+IWDG_PR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050E1H 1      
+IWDG_RLR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050E2H 1      
+BEEP_CSR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050F0H 1      
+BEEP_CSR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0050F3H 1      
+RTC_TR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005140H 1      
+RTC_TR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005141H 1      
+RTC_TR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005142H 1      
+RTC_DR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005144H 1      
+RTC_DR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005145H 1      
+RTC_DR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005146H 1      
+RTC_CR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005148H 1      
+RTC_CR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005149H 1      
+RTC_CR3. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00514AH 1      
+RTC_ISR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00514CH 1      
+RTC_ISR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00514DH 1      
+RTC_SPRER. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005150H 2      
+RTC_SPRERH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005150H 1      
+RTC_SPRERL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005151H 1      
+RTC_APRER. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005152H 1      
+RTC_WUTR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005154H 2      
+RTC_WUTRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005154H 1      
+RTC_WUTRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005155H 1      
+RTC_WPR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005159H 1      
+RTC_ALRMAR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515CH 1      
+RTC_ALRMAR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515DH 1      
+RTC_ALRMAR3. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515EH 1      
+RTC_ALRMAR4. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00515FH 1      
+SPI1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005200H 1      
+SPI1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005201H 1      
+SPI1_ICR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005202H 1      
+SPI1_SR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005203H 1      
+SPI1_DR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005204H 1      
+SPI1_CRCPR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005205H 1      
+SPI1_RXCRCR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005206H 1      
+SPI1_TXCRCR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005207H 1      
+I2C1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005210H 1      
+I2C1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005211H 1      
+I2C1_FREQR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005212H 1      
+I2C1_OARL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005213H 1      
+I2C1_OARH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005214H 1      
+I2C1_DR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005216H 1      
+I2C1_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005217H 1      
+I2C1_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005218H 1      
+I2C1_SR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005219H 1      
+I2C1_ITR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521AH 1      
+I2C1_CCRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521BH 1      
+I2C1_CCRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521CH 1      
+I2C1_TRISER. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521DH 1      
+I2C1_PECR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00521EH 1      
+USART1_SR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005230H 1      
+USART1_DR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005231H 1      
+USART1_BRR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005232H 1      
+USART1_BRR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005233H 1      
+USART1_CR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005234H 1      
+USART1_CR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005235H 1      
+USART1_CR3 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005236H 1      
+USART1_CR4 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005237H 1      
+USART1_CR5 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005238H 1      
+USART1_GTR . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005239H 1      
+USART1_PSCR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00523AH 1      
+TIM2_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005250H 1      
+TIM2_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005251H 1      
+TIM2_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005252H 1      
+TIM2_ETR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005253H 1      
+TIM2_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005254H 1      
+TIM2_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005255H 1      
+TIM2_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005256H 1      
+TIM2_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005257H 1      
+TIM2_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005258H 1      
+TIM2_CCMR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005259H 1      
+TIM2_CCMR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525AH 1      
+TIM2_CCER1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525BH 1      
+TIM2_CNTR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00525CH 2      
+TIM2_CNTRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525CH 1      
+TIM2_CNTRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525DH 1      
+TIM2_PSCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525EH 1      
+TIM2_ARR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00525FH 2      
+TIM2_ARRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00525FH 1      
+TIM2_ARRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005260H 1      
+TIM2_CCR1. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005261H 2      
+TIM2_CCR1H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005261H 1      
+TIM2_CCR1L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005262H 1      
+TIM2_CCR2. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005263H 2      
+TIM2_CCR2H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005263H 1      
+TIM2_CCR2L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005264H 1      
+TIM2_BKR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005265H 1      
+TIM2_OISR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005266H 1      
+TIM3_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005280H 1      
+TIM3_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005281H 1      
+TIM3_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005282H 1      
+TIM3_ETR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005283H 1      
+TIM3_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005284H 1      
+TIM3_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005285H 1      
+TIM3_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005286H 1      
+TIM3_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005287H 1      
+TIM3_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005288H 1      
+TIM3_CCMR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005289H 1      
+TIM3_CCMR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528AH 1      
+TIM3_CCER1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528BH 1      
+TIM3_CNTR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00528CH 2      
+TIM3_CNTRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528CH 1      
+TIM3_CNTRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528DH 1      
+TIM3_PSCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528EH 1      
+TIM3_ARR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00528FH 2      
+TIM3_ARRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00528FH 1      
+TIM3_ARRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005290H 1      
+TIM3_CCR1. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005291H 2      
+TIM3_CCR1H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005291H 1      
+TIM3_CCR1L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005292H 1      
+TIM3_CCR2. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005293H 2      
+TIM3_CCR2H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005293H 1      
+TIM3_CCR2L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005294H 1      
+TIM3_BKR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005295H 1      
+TIM3_OISR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005296H 1      
+TIM1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B0H 1      
+TIM1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B1H 1      
+TIM1_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B2H 1      
+TIM1_ETR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B3H 1      
+TIM1_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B4H 1      
+TIM1_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B5H 1      
+TIM1_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B6H 1      
+TIM1_SR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B7H 1      
+TIM1_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B8H 1      
+TIM1_CCMR1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052B9H 1      
+TIM1_CCMR2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BAH 1      
+TIM1_CCMR3 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BBH 1      
+TIM1_CCMR4 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BCH 1      
+TIM1_CCER1 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BDH 1      
+TIM1_CCER2 . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BEH 1      
+TIM1_CNTR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052BFH 2      
+TIM1_CNTRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052BFH 1      
+TIM1_CNTRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C0H 1      
+TIM1_PSCR. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C1H 2      
+TIM1_PSCRH . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C1H 1      
+TIM1_PSCRL . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C2H 1      
+TIM1_ARR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C3H 2      
+TIM1_ARRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C3H 1      
+TIM1_ARRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C4H 1      
+TIM1_RCR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C5H 1      
+TIM1_CCR1. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C6H 2      
+TIM1_CCR1H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C6H 1      
+TIM1_CCR1L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C7H 1      
+TIM1_CCR2. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052C8H 2      
+TIM1_CCR2H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C8H 1      
+TIM1_CCR2L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052C9H 1      
+TIM1_CCR3. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052CAH 2      
+TIM1_CCR3H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CAH 1      
+TIM1_CCR3L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CBH 1      
+TIM1_CCR4. . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0052CCH 2      
+TIM1_CCR4H . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CCH 1      
+TIM1_CCR4L . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CDH 1      
+TIM1_BKR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CEH 1      
+TIM1_DTR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052CFH 1      
+TIM1_OISR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D0H 1      
+TIM1_DCR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D1H 1      
+TIM1_DCR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D2H 1      
+TIM1_DMAR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052D3H 1      
+TIM4_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E0H 1      
+TIM4_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E1H 1      
+TIM4_SMCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E2H 1      
+TIM4_DER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E3H 1      
+TIM4_IER . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E4H 1      
+TIM4_SR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E5H 1      
+TIM4_EGR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E6H 1      
+TIM4_CNTR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E7H 1      
+TIM4_PSCR. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E8H 1      
+TIM4_ARR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052E9H 1      
+IR_CR. . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0052FFH 1      
+ADC1_CR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005340H 1      
+ADC1_CR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005341H 1      
+ADC1_CR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005342H 1      
+ADC1_SR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005343H 1      
+ADC1_DR. . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005344H 2      
+ADC1_DRH . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005344H 1      
+ADC1_DRL . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005345H 1      
+ADC1_HTR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005346H 2      
+ADC1_HTRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005346H 1      
+ADC1_HTRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005347H 1      
+ADC1_LTR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005348H 2      
+ADC1_LTRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005348H 1      
+ADC1_LTRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005349H 1      
+ADC1_SQR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534AH 1      
+ADC1_SQR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534BH 1      
+ADC1_SQR3. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534CH 1      
+ADC1_SQR4. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534DH 1      
+ADC1_TRIGR1. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534EH 1      
+ADC1_TRIGR2. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00534FH 1      
+ADC1_TRIGR3. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005350H 1      
+ADC1_TRIGR4. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005351H 1      
+DAC_CR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005380H 1      
+DAC_CR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005381H 1      
+DAC_SWTRIGR. . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005384H 1      
+DAC_SR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005385H 1      
+DAC_RDHR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   005388H 2      
+DAC_RDHRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005388H 1      
+DAC_RDHRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005389H 1      
+DAC_LDHR . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   00538CH 2      
+DAC_LDHRH. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00538CH 1      
+DAC_LDHRL. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00538DH 1      
+DAC_DHR8 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005390H 1      
+DAC_DOR. . . . . . . . . . . . . . . .  HREG16   hreg16  U_INT   0053ACH 2      
+DAC_DORH . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0053ACH 1      
+DAC_DORL . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  0053ADH 1      
+RI_ICR1. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005431H 1      
+RI_ICR2. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005432H 1      
+RI_IOIR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005433H 1      
+RI_IOIR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005434H 1      
+RI_IOIR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005435H 1      
+RI_IOCMR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005436H 1      
+RI_IOCMR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005437H 1      
+RI_IOCMR3. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005438H 1      
+RI_IOSR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005439H 1      
+RI_IOSR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543AH 1      
+RI_IOSR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543BH 1      
+RI_IOGCR . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543CH 1      
+RI_ASCR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543DH 1      
+RI_ASCR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543EH 1      
+RI_RCR . . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  00543FH 1      
+COMP_CSR1. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005440H 1      
+COMP_CSR2. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005441H 1      
+COMP_CSR3. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005442H 1      
+COMP_CSR4. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005443H 1      
+COMP_CSR5. . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  005444H 1      
+CFG_GCR. . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F60H 1      
+ITC_SPR1 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F70H 1      
+ITC_SPR2 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F71H 1      
+ITC_SPR3 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F72H 1      
+ITC_SPR4 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F73H 1      
+ITC_SPR5 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F74H 1      
+ITC_SPR6 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F75H 1      
+ITC_SPR7 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F76H 1      
+ITC_SPR8 . . . . . . . . . . . . . . .  HREG     hreg    U_CHAR  007F77H 1      
+_fctptr_t. . . . . . . . . . . . . . .  TYPEDEF ------- PTR   -------      2
+_halt_ . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_jmp_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_nop_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_rim_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_sim_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_trap_ . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_wfe_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_wfi_. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_getCC_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_setCC_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_getSP_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_setSP_. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_swapbyte_ . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+_swapnibble_ . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+DWORD. . . . . . . . . . . . . . . . .  TYPEDEF ------- ????? -------      4
+WORD . . . . . . . . . . . . . . . . .  TYPEDEF ------- U_CHAR  -------     2
+BYTE . . . . . . . . . . . . . . . . .  TYPEDEF ------- U_CHAR  -------     1
+delay. . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initTIM2 . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initTIM3 . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+updateTIM3 . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+Key. . . . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+initIO . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initLCD. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+lcdprint . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+lcdprintstr. . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+cls. . . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+updateLCD. . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initDAC. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+updateDAC. . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+DACvalue . . . . . . . . . . . . . . .  EXTERN  page0   U_INT   ------- -----
+handleKBD. . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+main . . . . . . . . . . . . . . . . .  PUBLIC  CODE    PROC    ------- -----
+handleKBD. . . . . . . . . . . . . . .  PUBLIC  CODE    PROC    ------- -----
+  del?095. . . . . . . . . . . . . . .  PUBLIC  auto    U_INT   000000H 2      
+delay. . . . . . . . . . . . . . . . .  PUBLIC  CODE    PROC    ------- -----
+ msec?093. . . . . . . . . . . . . . .  PARAM    auto    U_INT   000002H 2      
+  del?095. . . . . . . . . . . . . . .  PUBLIC  auto    U_INT   000000H 2      
+Key. . . . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+initIO . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initTIM2 . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+cls. . . . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+lcdprintstr. . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+initDAC. . . . . . . . . . . . . . . .  EXTERN  CODE    PROC    ------- -----
+?BH. . . . . . . . . . . . . . . . . .  EXTERN  page0   U_CHAR  ------- -----
+RCSTM8 COMPILER V2.28.10.092
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    152    ----
+   CONSTANT SIZE    =     52    ----
+   DATA SIZE        =   ----    ----
+   PAGE0 SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+RCSTM8 COMPILATION COMPLETE.  0 WARNING,  0 ERROR

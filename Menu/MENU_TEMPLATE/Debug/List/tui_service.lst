@@ -1,0 +1,1049 @@
+###############################################################################
+#                                                                             #
+# IAR C/C++ Compiler V6.12.1.50500 for Atmel AVR        11/Feb/2015  02:09:29 #
+# Copyright 1996-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Source file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\tui_service.c #
+#    Command line =  --string_literals_in_flash G:\Work\Projects\ATMEL\IAR\C\ #
+#                    MENU_TEMPLATE\tui_service.c --cpu=m32a -ms -o            #
+#                    G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\    #
+#                    -lCN G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Li #
+#                    st\ --initializers_in_flash --debug                      #
+#                    -DENABLE_BIT_DEFINITIONS -e --eeprom_size 1024 --clib    #
+#                    -Ohz                                                     #
+#    List file    =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\List\tu #
+#                    i_service.lst                                            #
+#    Object file  =  G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\Debug\Obj\tui #
+#                    _service.r90                                             #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Work\Projects\ATMEL\IAR\C\MENU_TEMPLATE\tui_service.c
+      1          //========================================================================
+      2          #include "tui_service.h"
+      3          
+      4          #include "typedef.h"
+      5          //========================================================================
+      6          
+      7          //========================================================================
+      8          // Модуль отображения информации на дисплее. Основная идея в этом модуле :
+      9          // Параллельность с другими процессами. Считываются нужные переменные из
+     10          // других модулей и на основании значений этих переменных выводится
+     11          // соответствующая информация.
+     12          // Примечание:
+     13          // Нужно сделать механизм получения значений переменных из других модулей.
+     14          //========================================================================
+     15          
+     16          //========================================================================
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+     17          u08 tui_service_flags;
+   \                     tui_service_flags:
+   \   00000000                      DS8 1
+     18          
+     19          u08 tui_service_blink_colon;
+     20          u08 tui_service_blink_string;
+     21          
+     22          u08 pos_curs;
+     23          //========================================================================
+     24          
+     25          //========================================================================
+     26          // Очистка участка буфера, куда выводится режим станка.
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     27          void clr_sMode (void)
+   \                     clr_sMode:
+     28          {
+     29             clr_string (sMode, 1, POSITION_MAX_X);
+   \   00000000                      REQUIRE ?Subroutine9
+   \   00000000                      ;               // Fall through to label ?Subroutine9
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine9:
+   \   00000000   E114               LDI     R17, 20
+   \   00000002   E000               LDI     R16, 0
+   \   00000004   ....               RJMP    ?Subroutine7
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine7:
+   \   00000000   ........           JMP     _clr_string
+     30          }
+     31          
+     32          // Очистка строки sMess (2).
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     33          void clr_sMess (void)
+   \                     clr_sMess:
+     34          {
+     35             clr_string (sMess, 1, POSITION_MAX_X);
+   \   00000000   E114               LDI     R17, 20
+   \   00000002   E104               LDI     R16, 20
+   \   00000004   ....               RJMP    ?Subroutine7
+     36          }
+     37          //========================================================================
+     38          
+     39          //========================================================================
+     40          // Вывод символа. Формат:
+     41          // Номер строки, номер знакоместа, символ.
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     42          void _PrintChar (u08 x, u08 a)
+   \                     _PrintChar:
+     43          {
+     44             dsp_buf [x] = a;
+   \   00000000   ....               RCALL   ?Subroutine4
+   \                     ??CrossCallReturnLabel_7:
+   \   00000002   8310               ST      Z, R17
+     45          //   init_dsp_buf (); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     46          }
+   \   00000004   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine4:
+   \   00000000   E0F0               LDI     R31, 0
+   \   00000002   2FE0               MOV     R30, R16
+   \   00000004   ....               SUBI    R30, LOW((-(dsp_buf) & 0xFFFF))
+   \   00000006   ....               SBCI    R31, (-(dsp_buf) & 0xFFFF) >> 8
+   \   00000008   9508               RET
+     47          //========================================================================
+     48          
+     49          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     50          void _Print_Buf (u08 x, char __flash *data)
+   \                     _Print_Buf:
+     51          {
+     52             u08 i = 0;
+   \   00000000   E040               LDI     R20, 0
+   \   00000002   C004               RJMP    ??_Print_Buf_0
+     53          
+     54             while (data [i])
+     55             {
+     56                dsp_buf [x++] = data [i++];
+   \                     ??_Print_Buf_1:
+   \   00000004   ....               RCALL   ?Subroutine4
+     57             }
+   \                     ??CrossCallReturnLabel_8:
+   \   00000006   8350               ST      Z, R21
+   \   00000008   9543               INC     R20
+   \   0000000A   9503               INC     R16
+   \                     ??_Print_Buf_0:
+   \   0000000C   E050               LDI     R21, 0
+   \   0000000E   01F9               MOVW    R31:R30, R19:R18
+   \   00000010   0FE4               ADD     R30, R20
+   \   00000012   1FF5               ADC     R31, R21
+   \   00000014   9154               LPM     R21, Z
+   \   00000016   2355               TST     R21
+   \   00000018   F7A9               BRNE    ??_Print_Buf_1
+     58          
+     59             init_dsp_buf ();
+   \   0000001A   ........           JMP     init_dsp_buf
+     60          }
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+   \                     tui_service_blink_colon:
+   \   00000000                      DS8 1
+   \                     tui_service_blink_string:
+   \   00000001                      DS8 1
+   \   00000002                      DS8 1
+   \   00000003                      DS8 1
+   \   00000004                      DS8 1
+
+   \                                 In  segment NEAR_Z, align 1, keep-with-next
+   \   00000000                      REQUIRE `?<Segment init: NEAR_Z>`
+   \                     pos_curs:
+   \   00000000                      DS8 1
+     61          //========================================================================
+     62          
+     63          //========================================================================
+     64          static u08 _tui_service_main;
+     65          static u08 _tui_service_slave;
+     66          
+     67          static u08 tui_termoplast_mode;
+     68          //========================================================================
+     69          
+     70          //########################################################################
+     71          //************************ Главный автомат *******************************
+     72          //########################################################################
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+     73          __flash VECTORS tui_service_func [TUI_SERVICE_MAIN_STATES] =
+   \                     tui_service_func:
+   \   00000000   ........           DC16 Tui_Service_Main_Init/2, Tui_Service_Main_Out_Mode/2
+   \   00000004   ....               DC16 Tui_Service_Main_Parameters/2
+     74          {
+     75          #define STATE(name, func) func,
+     76          #include "_tui_service_main.h"
+     77          #undef STATE
+     78          };
+     79          //------------------------------------------------------------------------
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     80          void tui_service (void)
+   \                     tui_service:
+     81          {
+     82             if (_tui_service_main < TUI_SERVICE_MAIN_STATES)
+   \   00000000   9100....           LDS     R16, (tui_service_blink_colon + 2)
+   \   00000004   3003               CPI     R16, 3
+   \   00000006   F498               BRCC    ??tui_service_0
+     83             {
+     84                if (_drv_char_dsp != DRV_CHAR_DSP_INIT_1)
+   \   00000008   9110....           LDS     R17, _drv_char_dsp
+   \   0000000C   2311               TST     R17
+   \   0000000E   F079               BREQ    ??tui_service_0
+     85                {
+     86                   if (_tui_service_main != TUI_SERVICE_MAIN_INIT)
+   \   00000010   2300               TST     R16
+   \   00000012   F011               BREQ    ??tui_service_1
+     87                   {
+     88                      kbd_drv ();
+   \   00000014   ........           CALL    kbd_drv
+     89                   }
+     90          
+     91                   tui_service_func [_tui_service_main] ();
+   \                     ??tui_service_1:
+   \   00000018   9100....           LDS     R16, (tui_service_blink_colon + 2)
+   \   0000001C   E012               LDI     R17, 2
+   \   0000001E   9F01               MUL     R16, R17
+   \   00000020   01F0               MOVW    R31:R30, R1:R0
+   \   00000022   ....               SUBI    R30, LOW((-(tui_service_func) & 0xFFFF))
+   \   00000024   ....               SBCI    R31, (-(tui_service_func) & 0xFFFF) >> 8
+   \   00000026   9105               LPM     R16, Z+
+   \   00000028   91F4               LPM     R31, Z
+   \   0000002A   2FE0               MOV     R30, R16
+   \   0000002C   9509               ICALL
+     92                }
+     93             }
+     94          // Обработка ошибки значения состояния.
+     95          }
+   \                     ??tui_service_0:
+   \   0000002E   9508               RET
+     96          //========================================================================
+     97          
+     98          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+     99          void Tui_Service_Main_Init ()
+   \                     Tui_Service_Main_Init:
+    100          {
+    101             SET_MENU_LEVEL (L_OUT_MODE);
+   \   00000000   ....               LDI     R16, LOW(L_OUT_MODE)
+   \   00000002   ....               LDI     R17, (L_OUT_MODE) >> 8
+   \   00000004   ........           JMP     Set_Menu_Level
+    102          }
+    103          //========================================================================
+    104          
+    105          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    106          void Tui_Service_Main_Out_Mode ()
+   \                     Tui_Service_Main_Out_Mode:
+    107          {
+    108             if (proc_menu_keys ()) return;
+   \   00000000   ........           CALL    proc_menu_keys
+   \   00000004   2300               TST     R16
+   \   00000006   F409               BRNE    ??Tui_Service_Main_Out_Mode_0
+    109          //------------------------------------------------------------------------
+    110             switch (_tui_service_slave)
+    111             {
+    112                case TUI_SERVICE_OUT_MODE:
+    113                   break;
+    114          
+    115                case SERVICE_MENU_SHOW_PRESET_TEMP:
+    116                   break;
+    117          
+    118                case SERVICE_MENU_SHOW_CURR_TEMP:
+    119                   break;
+    120          
+    121                default:
+    122                   break;
+    123             }
+    124          //------------------------------------------------------------------------
+    125             show_mode ();                                      // Вывод режима станка.
+   \   00000008   ....               RCALL   show_mode
+    126          }
+   \                     ??Tui_Service_Main_Out_Mode_0:
+   \   0000000A   9508               RET
+    127          //========================================================================
+    128          
+    129          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    130          void out_mode_init (void)
+   \                     out_mode_init:
+    131          {
+    132             tui_service_blink_colon = 0;
+   \   00000000   ....               LDI     R30, LOW(tui_service_blink_colon)
+   \   00000002   ....               LDI     R31, (tui_service_blink_colon) >> 8
+   \   00000004   E000               LDI     R16, 0
+   \   00000006   8300               ST      Z, R16
+    133             tui_service_blink_string = 0;
+   \   00000008   8301               STD     Z+1, R16
+    134          
+    135             tui_termoplast_mode = 0xFF;
+   \   0000000A   EF0F               LDI     R16, 255
+   \   0000000C   8304               STD     Z+4, R16
+    136          
+    137             _tui_service_main = TUI_SERVICE_MAIN_OUT_MODE;
+   \   0000000E   E001               LDI     R16, 1
+   \   00000010   8302               STD     Z+2, R16
+    138             _tui_service_slave = TUI_SERVICE_OUT_MODE;
+   \   00000012   E000               LDI     R16, 0
+   \   00000014   8303               STD     Z+3, R16
+    139          }
+   \   00000016   9508               RET
+    140          //========================================================================
+    141          
+    142          //========================================================================
+    143          //--------------------- Отображение режима -------------------------------
+    144          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    145          void show_mode (void)
+   \                     show_mode:
+    146          {
+    147             if (termoplast_mode != tui_termoplast_mode)
+   \   00000000   9100....           LDS     R16, termoplast_mode
+   \   00000004   9110....           LDS     R17, (tui_service_blink_colon + 4)
+   \   00000008   1701               CP      R16, R17
+   \   0000000A   F129               BREQ    ??CrossCallReturnLabel_12
+    148             {
+    149                tui_termoplast_mode = termoplast_mode;
+   \   0000000C   9300....           STS     (tui_service_blink_colon + 4), R16
+    150          
+    151                switch (termoplast_mode)
+   \   00000010   2300               TST     R16
+   \   00000012   F049               BREQ    ??show_mode_0
+   \   00000014   950A               DEC     R16
+   \   00000016   F061               BREQ    ??show_mode_1
+   \   00000018   950A               DEC     R16
+   \   0000001A   F071               BREQ    ??show_mode_2
+   \   0000001C   950A               DEC     R16
+   \   0000001E   F089               BREQ    ??show_mode_3
+   \   00000020   950A               DEC     R16
+   \   00000022   F0A1               BREQ    ??show_mode_4
+   \   00000024   9508               RET
+    152                {
+    153                   case MODE_STOP:
+    154                      clr_sMode ();
+   \                     ??show_mode_0:
+   \   00000026   ....               RCALL   ?Subroutine9
+    155                      Print_Buf (sMode, 9, "СТОП");
+   \                     ??CrossCallReturnLabel_19:
+   \   00000028   ....               LDI     R18, LOW(`?<Constant "\\321\\322\\316\\317">`)
+   \   0000002A   ....               LDI     R19, (`?<Constant "\\321\\322\\316\\317">`) >> 8
+   \   0000002C   E008               LDI     R16, 8
+   \   0000002E   C008               RJMP    ??show_mode_5
+    156                      break;
+    157          
+    158                   case MODE_MANUAL:
+    159                      clr_sMode ();
+   \                     ??show_mode_1:
+   \   00000030   ....               RCALL   ?Subroutine9
+    160                      Print_Buf (sMode, 8, "НАЛАДКА");
+   \                     ??CrossCallReturnLabel_18:
+   \   00000032   ....               LDI     R18, LOW((`?<Constant "\\321\\322\\316\\317">` + 5))
+   \   00000034   ....               LDI     R19, HIGH((`?<Constant "\\321\\322\\316\\317">` + 5))
+   \   00000036   C003               RJMP    ??show_mode_6
+    161                      break;
+    162          
+    163                   case MODE_AUTOMAT:
+    164                      clr_sMode ();
+   \                     ??show_mode_2:
+   \   00000038   ....               RCALL   ?Subroutine9
+    165                      Print_Buf (sMode, 8, "АВТОМАТ");
+   \                     ??CrossCallReturnLabel_17:
+   \   0000003A   ....               LDI     R18, LOW((`?<Constant "\\321\\322\\316\\317">` + 13))
+   \   0000003C   ....               LDI     R19, HIGH((`?<Constant "\\321\\322\\316\\317">` + 13))
+   \                     ??show_mode_6:
+   \   0000003E   E007               LDI     R16, 7
+   \                     ??show_mode_5:
+   \   00000040   ....               RJMP    ?Subroutine8
+    166                      break;
+    167          
+    168                   case MODE_STOPPING:
+    169                      clr_sMode ();
+   \                     ??show_mode_3:
+   \   00000042   ....               RCALL   ?Subroutine9
+    170                      Print_Buf (sMode, 7, "ОСТАНОВКА");
+   \                     ??CrossCallReturnLabel_16:
+   \   00000044   ....               LDI     R18, LOW((`?<Constant "\\321\\322\\316\\317">` + 21))
+   \   00000046   ....               LDI     R19, HIGH((`?<Constant "\\321\\322\\316\\317">` + 21))
+   \   00000048   E006               LDI     R16, 6
+   \   0000004A   CFFA               RJMP    ??show_mode_5
+    171                      break;
+    172          
+    173                   case MODE_EMERG_STOP:
+    174                      clr_sMode ();
+   \                     ??show_mode_4:
+   \   0000004C   ....               RCALL   ?Subroutine9
+    175                      Print_Buf (sMode, 4, "АВАРИЙНЫЙ СТОП!");
+   \                     ??CrossCallReturnLabel_15:
+   \   0000004E   ....               LDI     R18, LOW((`?<Constant "\\321\\322\\316\\317">` + 31))
+   \   00000050   ....               LDI     R19, HIGH((`?<Constant "\\321\\322\\316\\317">` + 31))
+   \   00000052   E003               LDI     R16, 3
+   \   00000054   ....               RCALL   ?Subroutine8
+    176                      break;
+    177          
+    178                   default:
+    179                   	break;
+    180                }
+    181             }
+    182          }
+   \                     ??CrossCallReturnLabel_12:
+   \   00000056   9508               RET
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine8:
+   \   00000000   ....               RJMP    _Print_Buf
+    183          //========================================================================
+    184          
+    185          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    186          void show_service_menu (void)
+   \                     show_service_menu:
+    187          {
+    188             u08 num = GetKeyCode ();
+    189          
+    190             switch (num)
+   \   00000000   ........           CALL    GetKeyCode
+   \   00000004   2300               TST     R16
+   \   00000006   F039               BREQ    ??show_service_menu_0
+   \   00000008   950A               DEC     R16
+   \   0000000A   F041               BREQ    ??show_service_menu_1
+   \   0000000C   950A               DEC     R16
+   \   0000000E   F091               BREQ    ??show_service_menu_2
+   \   00000010   950A               DEC     R16
+   \   00000012   F0D1               BREQ    ??show_service_menu_3
+   \   00000014   9508               RET
+    191             {
+    192                case 0:
+    193                   clr_service_dsp_array ();
+   \                     ??show_service_menu_0:
+   \   00000016   ....               RCALL   ?Subroutine3
+    194                   _tui_service_slave = TUI_SERVICE_OUT_MODE;
+   \                     ??CrossCallReturnLabel_6:
+   \   00000018   E000               LDI     R16, 0
+   \   0000001A   C009               RJMP    ??show_service_menu_4
+    195                   break;
+    196          
+    197                case 1:
+    198                   clr_service_dsp_array ();
+   \                     ??show_service_menu_1:
+   \   0000001C   ....               RCALL   ?Subroutine3
+    199                   Print_Buf (2, 1, "ЗАДАННАЯ ТЕМПЕРАТУРА");
+   \                     ??CrossCallReturnLabel_5:
+   \   0000001E   ....               LDI     R18, LOW(`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\`)
+   \   00000020   ....               LDI     R19, (`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\`) >> 8
+   \   00000022   E104               LDI     R16, 20
+   \   00000024   ....               RCALL   ?Subroutine1
+    200                   Print_Buf (3, 1, "  1    2    3    4  ");
+    201                   Print_Buf (4, 1, " 160  165  170  175 ");
+   \                     ??CrossCallReturnLabel_9:
+   \   00000026   ....               LDI     R18, LOW((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 42))
+   \   00000028   ....               LDI     R19, HIGH((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 42))
+   \   0000002A   ....               RCALL   ?Subroutine2
+    202                   _tui_service_slave = SERVICE_MENU_SHOW_PRESET_TEMP;
+   \                     ??CrossCallReturnLabel_0:
+   \   0000002C   E002               LDI     R16, 2
+   \                     ??show_service_menu_4:
+   \   0000002E   9300....           STS     (tui_service_blink_colon + 3), R16
+    203                   break;
+   \   00000032   9508               RET
+    204          
+    205                case 2:
+    206                   clr_service_dsp_array ();
+   \                     ??show_service_menu_2:
+   \   00000034   ....               RCALL   ?Subroutine3
+    207                   Print_Buf (2, 2, "ТЕКУЩАЯ ТЕМПЕРАТУРА");
+   \                     ??CrossCallReturnLabel_4:
+   \   00000036   ....               LDI     R18, LOW((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 63))
+   \   00000038   ....               LDI     R19, HIGH((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 63))
+   \   0000003A   E105               LDI     R16, 21
+   \   0000003C   ....               RCALL   ?Subroutine1
+    208                   Print_Buf (3, 1, "  1    2    3    4  ");
+    209                   Print_Buf (4, 1, " 100  105  110  115 ");
+   \                     ??CrossCallReturnLabel_10:
+   \   0000003E   ....               LDI     R18, LOW((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 83))
+   \   00000040   ....               LDI     R19, HIGH((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 83))
+   \   00000042   ....               RCALL   ?Subroutine2
+    210                   _tui_service_slave = SERVICE_MENU_SHOW_CURR_TEMP;
+   \                     ??CrossCallReturnLabel_1:
+   \   00000044   E003               LDI     R16, 3
+   \   00000046   CFF3               RJMP    ??show_service_menu_4
+    211                   break;
+    212          
+    213                case 3:
+    214                   clr_service_dsp_array ();
+   \                     ??show_service_menu_3:
+   \   00000048   ....               RCALL   ?Subroutine3
+    215                   Print_Buf (2, 8, "СЧЕТЧИК");
+   \                     ??CrossCallReturnLabel_3:
+   \   0000004A   ....               LDI     R18, LOW((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 104))
+   \   0000004C   ....               LDI     R19, HIGH((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 104))
+   \   0000004E   E10B               LDI     R16, 27
+   \   00000050   ....               RCALL   ?Subroutine8
+    216                   Print_Buf (3, 1, "ГОТОВО        ЗАДАНО");
+   \                     ??CrossCallReturnLabel_13:
+   \   00000052   ....               LDI     R18, LOW((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 112))
+   \   00000054   ....               LDI     R19, HIGH((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 112))
+   \   00000056   E208               LDI     R16, 40
+   \   00000058   ....               RCALL   ?Subroutine8
+    217                   Print_Buf (4, 1, "000003        999999");
+   \                     ??CrossCallReturnLabel_14:
+   \   0000005A   ....               LDI     R18, LOW((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 133))
+   \   0000005C   ....               LDI     R19, HIGH((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 133))
+   \   0000005E   ....               RCALL   ?Subroutine2
+    218                   _tui_service_slave = SERVICE_MENU_SHOW_COUNTER;
+   \                     ??CrossCallReturnLabel_2:
+   \   00000060   E004               LDI     R16, 4
+   \   00000062   CFE5               RJMP    ??show_service_menu_4
+    219                   break;
+    220          
+    221                default:
+    222                   break;
+    223             }
+    224          }
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine3:
+   \   00000000   ....               RJMP    clr_service_dsp_array
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine2:
+   \   00000000   E30C               LDI     R16, 60
+   \   00000002   ....               RJMP    ?Subroutine8
+
+   \                                 In  segment CODE, align 2, keep-with-next
+   \                     ?Subroutine1:
+   \   00000000   ....               RCALL   ?Subroutine8
+   \                     ??CrossCallReturnLabel_11:
+   \   00000002   ....               LDI     R18, LOW((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 21))
+   \   00000004   ....               LDI     R19, HIGH((`?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\` + 21))
+   \   00000006   E208               LDI     R16, 40
+   \   00000008                      REQUIRE ?Subroutine8
+   \   00000008                      ;               // Fall through to label ?Subroutine8
+    225          //========================================================================
+    226          
+    227          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    228          void clr_service_dsp_array (void)
+   \                     clr_service_dsp_array:
+    229          {
+    230             clr_string (2, 1, POSITION_MAX_X);
+   \   00000000   E114               LDI     R17, 20
+   \   00000002   E104               LDI     R16, 20
+   \   00000004   ....               RCALL   ?Subroutine7
+    231             clr_string (3, 1, POSITION_MAX_X);
+   \                     ??CrossCallReturnLabel_21:
+   \   00000006   E114               LDI     R17, 20
+   \   00000008   E208               LDI     R16, 40
+   \   0000000A   ....               RCALL   ?Subroutine7
+    232             clr_string (4, 1, POSITION_MAX_X);
+   \                     ??CrossCallReturnLabel_20:
+   \   0000000C   E114               LDI     R17, 20
+   \   0000000E   E30C               LDI     R16, 60
+   \   00000010   ....               RJMP    ?Subroutine7
+    233          }
+    234          //########################################################################
+    235          
+    236          //########################################################################
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    237          void Tui_Service_Main_Parameters (void)
+   \                     Tui_Service_Main_Parameters:
+    238          {
+    239             if (proc_menu_keys ()) return;
+   \   00000000   ........           CALL    proc_menu_keys
+   \   00000004   2300               TST     R16
+   \   00000006   F461               BRNE    ??Tui_Service_Main_Parameters_0
+    240          
+    241             if ((MenuFuncPtr)) (*MenuFuncPtr)();
+   \   00000008   ....               LDI     R30, LOW(MenuFuncPtr)
+   \   0000000A   ....               LDI     R31, (MenuFuncPtr) >> 8
+   \   0000000C   8120               LD      R18, Z
+   \   0000000E   8131               LDD     R19, Z+1
+   \   00000010   E000               LDI     R16, LOW(0)
+   \   00000012   3020               CPI     R18, 0
+   \   00000014   0730               CPC     R19, R16
+   \   00000016   F021               BREQ    ??Tui_Service_Main_Parameters_0
+   \   00000018   91E0....           LDS     R30, MenuFuncPtr
+   \   0000001C   2FF3               MOV     R31, R19
+   \   0000001E   9509               ICALL
+   \                     ??Tui_Service_Main_Parameters_0:
+   \   00000020   9508               RET
+    242          }
+    243          //========================================================================
+    244          
+    245          //========================================================================
+
+   \                                 In  segment CODE, align 2, keep-with-next
+    246          void menu_parameters_init (void)
+   \                     menu_parameters_init:
+    247          {
+    248             MenuFuncPtr = EMPTY_FUNC;
+   \   00000000   E000               LDI     R16, LOW(0)
+   \   00000002   ....               LDI     R30, LOW(MenuFuncPtr)
+   \   00000004   ....               LDI     R31, (MenuFuncPtr) >> 8
+   \   00000006   8300               ST      Z, R16
+   \   00000008   8301               STD     Z+1, R16
+    249          
+    250             _tui_service_main = TUI_SERVICE_MAIN_PARAMETERS;
+   \   0000000A   E002               LDI     R16, 2
+   \   0000000C   9300....           STS     (tui_service_blink_colon + 2), R16
+    251          }
+   \   00000010   9508               RET
+    252          //########################################################################
+    253          
+    254          //=======================================================================================================================================================================================================================================================
+    255          //         NAME                       PARENT                CHILD                 NEXT                       PREV                       NUM_FUNCE          ENTER_FUNC            MENU_FUNC       TEXT
+    256          //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    257          
+    258          //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    259          MAKE_MENU (L_OUT_MODE,                NULL_ENTRY,           L1_I1_TEMP,           NULL_ENTRY,                NULL_ENTRY,                show_service_menu, out_mode_init,        NULL_FUNC, "ПАРАМЕТРЫ");
+   \                     L_OUT_MODE:
+   \   00000000   ............       DC16 Null_Menu, L1_I1_TEMP, Null_Menu, Null_Menu, show_service_menu/2
+   \              ........    
+   \   0000000A   ....0000           DC16 out_mode_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\317\\300\\320\\300\\314\\305\\322\\320\\3`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    260          MAKE_MENU (L1_I1_TEMP,                L_OUT_MODE,           L2_I1_TEMP,           L1_I2_TIME,                NULL_ENTRY,                NULL_FUNC,         menu_parameters_init, NULL_FUNC, "ТЕМПЕРАТУРА");
+   \                     L1_I1_TEMP:
+   \   00000000   ............       DC16 L_OUT_MODE, L2_I1_TEMP, L1_I2_TIME, Null_Menu, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\322\\305\\314\\317\\305\\320\\300\\322\\3`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    261          MAKE_MENU (L1_I2_TIME,                L_OUT_MODE,           TIME_I1_COOLING,      L1_I3_SPEED,               L1_I1_TEMP,                NULL_FUNC,         menu_parameters_init, NULL_FUNC, "ВРЕМЯ");
+   \                     L1_I2_TIME:
+   \   00000000   ............       DC16 L_OUT_MODE, TIME_I1_COOLING, L1_I3_SPEED, L1_I1_TEMP, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\302\\320\\305\\314\\337">`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    262          MAKE_MENU (L1_I3_SPEED,               L_OUT_MODE,           SPEED_I1_CLOSE,       L1_I4_PRESSURE,            L1_I2_TIME,                NULL_FUNC,         menu_parameters_init, NULL_FUNC, "СКОРОСТЬ");
+   \                     L1_I3_SPEED:
+   \   00000000   ............       DC16 L_OUT_MODE, SPEED_I1_CLOSE, L1_I4_PRESSURE, L1_I2_TIME, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\321\\312\\316\\320\\316\\321\\322\\334">`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    263          MAKE_MENU (L1_I4_PRESSURE,            L_OUT_MODE,           L2_I4_PRESSURE,       L1_I5_INJECTION_UNIT,      L1_I3_SPEED,               NULL_FUNC,         menu_parameters_init, NULL_FUNC, "ДАВЛЕНИЕ");
+   \                     L1_I4_PRESSURE:
+   \   00000000   ............       DC16 L_OUT_MODE, L2_I4_PRESSURE, L1_I5_INJECTION_UNIT, L1_I3_SPEED, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\304\\300\\302\\313\\305\\315\\310\\305">`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    264          MAKE_MENU (L1_I5_INJECTION_UNIT,      L_OUT_MODE,           L2_I5_INJECTION_UNIT, L1_I6_FORM,                L1_I4_PRESSURE,            NULL_FUNC,         menu_parameters_init, NULL_FUNC, "УЗЕЛ ВПРЫСКА");
+   \                     L1_I5_INJECTION_UNIT:
+   \   00000000   ............       DC16 L_OUT_MODE, L2_I5_INJECTION_UNIT, L1_I6_FORM, L1_I4_PRESSURE, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\323\\307\\305\\313 \\302\\317\\320\\333\\`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    265          MAKE_MENU (L1_I6_FORM,                L_OUT_MODE,           L2_I6_FORM,           L1_I7_EJECTOR,             L1_I5_INJECTION_UNIT,      NULL_FUNC,         menu_parameters_init, NULL_FUNC, "ФОРМА");
+   \                     L1_I6_FORM:
+   \   00000000   ............       DC16 L_OUT_MODE, L2_I6_FORM, L1_I7_EJECTOR, L1_I5_INJECTION_UNIT, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\324\\316\\320\\314\\300">`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    266          MAKE_MENU (L1_I7_EJECTOR,             L_OUT_MODE,           EJECTOR,              L1_I8_COUNTER,             L1_I6_FORM,                NULL_FUNC,         menu_parameters_init, NULL_FUNC, "ВЫТАЛКИВАТЕЛЬ");
+   \                     L1_I7_EJECTOR:
+   \   00000000   ............       DC16 L_OUT_MODE, EJECTOR, L1_I8_COUNTER, L1_I6_FORM, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\302\\333\\322\\300\\313\\312\\310\\302\\3`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    267          MAKE_MENU (L1_I8_COUNTER,             L_OUT_MODE,           L2_I8_COUNTER,        NULL_ENTRY,                L1_I7_EJECTOR,             NULL_FUNC,         menu_parameters_init, NULL_FUNC, "СЧЕТЧИК ИЗДЕЛИЙ");
+   \                     L1_I8_COUNTER:
+   \   00000000   ............       DC16 L_OUT_MODE, L2_I8_COUNTER, Null_Menu, L1_I7_EJECTOR, 0H
+   \              ....0000    
+   \   0000000A   ....0000           DC16 menu_parameters_init/2, 0H
+   \   0000000E   ....               DC16 `?<Constant "\\321\\327\\305\\322\\327\\310\\312 \\310\\`
+    268          //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    269          MAKE_MENU (L2_I1_TEMP,                L1_I1_TEMP,           NULL_ENTRY,           NULL_ENTRY,                NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  NULL_TEXT);
+   \                     L2_I1_TEMP:
+   \   00000000   ............       DC16 L1_I1_TEMP, Null_Menu, Null_Menu, Null_Menu, 0H, 0H, 0H, 0H
+   \              ....00000000
+   \              00000000    
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    270          MAKE_MENU (L2_I4_PRESSURE,            L1_I4_PRESSURE,       NULL_ENTRY,           NULL_ENTRY,                NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  NULL_TEXT);
+   \                     L2_I4_PRESSURE:
+   \   00000000   ............       DC16 L1_I4_PRESSURE, Null_Menu, Null_Menu, Null_Menu, 0H, 0H, 0H, 0H
+   \              ....00000000
+   \              00000000    
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    271          MAKE_MENU (L2_I5_INJECTION_UNIT,      L1_I5_INJECTION_UNIT, NULL_ENTRY,           NULL_ENTRY,                NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  NULL_TEXT);
+   \                     L2_I5_INJECTION_UNIT:
+   \   00000000   ............       DC16 L1_I5_INJECTION_UNIT, Null_Menu, Null_Menu, Null_Menu, 0H, 0H, 0H
+   \              ....00000000
+   \              0000        
+   \   0000000E   0000               DC16 0H
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    272          MAKE_MENU (L2_I6_FORM,                L1_I6_FORM,           NULL_ENTRY,           NULL_ENTRY,                NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  NULL_TEXT);
+   \                     L2_I6_FORM:
+   \   00000000   ............       DC16 L1_I6_FORM, Null_Menu, Null_Menu, Null_Menu, 0H, 0H, 0H, 0H
+   \              ....00000000
+   \              00000000    
+    273          
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    274          MAKE_MENU (L2_I8_COUNTER,             L1_I8_COUNTER,        NULL_ENTRY,           NULL_ENTRY,                NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  NULL_TEXT);
+   \                     L2_I8_COUNTER:
+   \   00000000   ............       DC16 L1_I8_COUNTER, Null_Menu, Null_Menu, Null_Menu, 0H, 0H, 0H, 0H
+   \              ....00000000
+   \              00000000    
+    275          //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    276          // Время.
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    277          MAKE_MENU (TIME_I1_COOLING,           L1_I2_TIME,           NULL_ENTRY,           TIME_I2_2_LEVEL_INJECTION, NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "ОХЛАЖДЕНИЕ");
+   \                     TIME_I1_COOLING:
+   \   00000000   ............       DC16 L1_I2_TIME, Null_Menu, TIME_I2_2_LEVEL_INJECTION, Null_Menu, 0H
+   \              ....0000    
+   \   0000000A   00000000....       DC16 0H, 0H, `?<Constant "\\316\\325\\313\\300\\306\\304\\305\\315\\3`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    278          MAKE_MENU (TIME_I2_2_LEVEL_INJECTION, L1_I2_TIME,           NULL_ENTRY,           TIME_I3_PAUSE_CYCLES,      TIME_I1_COOLING,           NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "2СТ.ВПРЫСКА");
+   \                     TIME_I2_2_LEVEL_INJECTION:
+   \   00000000   ............       DC16 L1_I2_TIME, Null_Menu, TIME_I3_PAUSE_CYCLES, TIME_I1_COOLING, 0H
+   \              ....0000    
+   \   0000000A   00000000....       DC16 0H, 0H, `?<Constant "2\\321\\322.\\302\\317\\320\\333\\321\\312`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    279          MAKE_MENU (TIME_I3_PAUSE_CYCLES,      L1_I2_TIME,           NULL_ENTRY,           TIME_I4_INJECTION,         TIME_I2_2_LEVEL_INJECTION, NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "МЕЖДУ ЦИКЛАМИ");
+   \                     TIME_I3_PAUSE_CYCLES:
+   \   00000000   ............       DC16 L1_I2_TIME, Null_Menu, TIME_I4_INJECTION
+   \   00000006   ....00000000       DC16 TIME_I2_2_LEVEL_INJECTION, 0H, 0H, 0H
+   \              0000        
+   \   0000000E   ....               DC16 `?<Constant "\\314\\305\\306\\304\\323 \\326\\310\\312\\`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    280          MAKE_MENU (TIME_I4_INJECTION,         L1_I2_TIME,           NULL_ENTRY,           TIME_I5_LOADING,           TIME_I3_PAUSE_CYCLES,      NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "ВПРЫСК");
+   \                     TIME_I4_INJECTION:
+   \   00000000   ............       DC16 L1_I2_TIME, Null_Menu, TIME_I5_LOADING, TIME_I3_PAUSE_CYCLES, 0H
+   \              ....0000    
+   \   0000000A   00000000....       DC16 0H, 0H, `?<Constant "\\302\\317\\320\\333\\321\\312">`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    281          MAKE_MENU (TIME_I5_LOADING,           L1_I2_TIME,           NULL_ENTRY,           NULL_ENTRY,                TIME_I4_INJECTION,         NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "ЗАГРУЗКА");
+   \                     TIME_I5_LOADING:
+   \   00000000   ............       DC16 L1_I2_TIME, Null_Menu, Null_Menu, TIME_I4_INJECTION, 0H, 0H, 0H
+   \              ....00000000
+   \              0000        
+   \   0000000E   ....               DC16 `?<Constant "\\307\\300\\303\\320\\323\\307\\312\\300">`
+    282          //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    283          // Скорость.
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    284          MAKE_MENU (SPEED_I1_CLOSE,            L1_I3_SPEED,          NULL_ENTRY,           SPEED_I2_OPEN,             NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "СМЫКАНИЕ");
+   \                     SPEED_I1_CLOSE:
+   \   00000000   ............       DC16 L1_I3_SPEED, Null_Menu, SPEED_I2_OPEN, Null_Menu, 0H, 0H, 0H
+   \              ....00000000
+   \              0000        
+   \   0000000E   ....               DC16 `?<Constant "\\321\\314\\333\\312\\300\\315\\310\\305">`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    285          MAKE_MENU (SPEED_I2_OPEN,             L1_I3_SPEED,          NULL_ENTRY,           SPEED_I3_INJECTION,        SPEED_I1_CLOSE,            NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "РАЗМЫКАНИЕ");
+   \                     SPEED_I2_OPEN:
+   \   00000000   ............       DC16 L1_I3_SPEED, Null_Menu, SPEED_I3_INJECTION, SPEED_I1_CLOSE, 0H, 0H
+   \              ....00000000
+   \   0000000C   0000....           DC16 0H, `?<Constant "\\320\\300\\307\\314\\333\\312\\300\\315\\3`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    286          MAKE_MENU (SPEED_I3_INJECTION,        L1_I3_SPEED,          NULL_ENTRY,           SPEED_I4_LOADING,          SPEED_I2_OPEN,             NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "ВПРЫСК");
+   \                     SPEED_I3_INJECTION:
+   \   00000000   ............       DC16 L1_I3_SPEED, Null_Menu, SPEED_I4_LOADING, SPEED_I2_OPEN, 0H, 0H
+   \              ....00000000
+   \   0000000C   0000....           DC16 0H, `?<Constant "\\302\\317\\320\\333\\321\\312">`
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    287          MAKE_MENU (SPEED_I4_LOADING,          L1_I3_SPEED,          NULL_ENTRY,           NULL_ENTRY,                SPEED_I3_INJECTION,        NULL_FUNC,         NULL_FUNC,            NULL_FUNC,  "ЗАГРУЗКА");
+   \                     SPEED_I4_LOADING:
+   \   00000000   ............       DC16 L1_I3_SPEED, Null_Menu, Null_Menu, SPEED_I3_INJECTION, 0H, 0H, 0H
+   \              ....00000000
+   \              0000        
+   \   0000000E   ....               DC16 `?<Constant "\\307\\300\\303\\320\\323\\307\\312\\300">`
+    288          //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    289          // Выталкиватель.
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+    290          MAKE_MENU (EJECTOR,                   L1_I7_EJECTOR,        NULL_ENTRY,           NULL_ENTRY,                NULL_ENTRY,                NULL_FUNC,         NULL_FUNC,            NULL_FUNC,   NULL_TEXT);
+   \                     EJECTOR:
+   \   00000000   ............       DC16 L1_I7_EJECTOR, Null_Menu, Null_Menu, Null_Menu, 0H, 0H, 0H, 0H
+   \              ....00000000
+   \              00000000    
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\317\\300\\320\\300\\314\\305\\322\\320\\3`:
+   \   00000000   C0CFC0D0C5CC       DC8 "\317\300\320\300\314\305\322\320\333"
+   \              D0D200DB    
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\322\\305\\314\\317\\305\\320\\300\\322\\3`:
+   \   00000000   C5D2CFCCD0C5       DC8 "\322\305\314\317\305\320\300\322\323\320\300"
+   \              D2C0D0D300C0
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\302\\320\\305\\314\\337">`:
+   \   00000000   D0C2CCC500DF       DC8 "\302\320\305\314\337"
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\321\\312\\316\\320\\316\\321\\322\\334">`:
+   \   00000000   CAD1D0CED1CE       DC8 "\321\312\316\320\316\321\322\334"
+   \              DCD200      
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\304\\300\\302\\313\\305\\315\\310\\305">`:
+   \   00000000   C0C4CBC2CDC5       DC8 "\304\300\302\313\305\315\310\305"
+   \              C5C800      
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\323\\307\\305\\313 \\302\\317\\320\\333\\`:
+   \   00000000   C7D3CBC5C220       DC8 "\323\307\305\313 \302\317\320\333\321\312\300"
+   \              D0CFD1DBC0CA
+   \              00          
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\324\\316\\320\\314\\300">`:
+   \   00000000   CED4CCD000C0       DC8 "\324\316\320\314\300"
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\302\\333\\322\\300\\313\\312\\310\\302\\3`:
+   \   00000000   DBC2C0D2CACB       DC8 "\302\333\322\300\313\312\310\302\300\322\305\313\334"
+   \              C2C8D2C0CBC5
+   \              00DC        
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\321\\327\\305\\322\\327\\310\\312 \\310\\`:
+   \   00000000   D7D1D2C5C8D7       DC8 "\321\327\305\322\327\310\312 \310\307\304\305\313\310\311"
+   \              20CAC7C8C5C4
+   \              C8CB00C9    
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\316\\325\\313\\300\\306\\304\\305\\315\\3`:
+   \   00000000   D5CEC0CBC4C6       DC8 "\316\325\313\300\306\304\305\315\310\305"
+   \              CDC5C5C800  
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "2\\321\\322.\\302\\317\\320\\333\\321\\312`:
+   \   00000000   D1322ED2CFC2       DC8 "2\321\322.\302\317\320\333\321\312\300"
+   \              DBD0CAD100C0
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\314\\305\\306\\304\\323 \\326\\310\\312\\`:
+   \   00000000   C5CCC4C620D3       DC8 "\314\305\306\304\323 \326\310\312\313\300\314\310"
+   \              C8D6CBCACCC0
+   \              00C8        
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\302\\317\\320\\333\\321\\312">`:
+   \   00000000   CFC2DBD0CAD1       DC8 "\302\317\320\333\321\312"
+   \              00          
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\307\\300\\303\\320\\323\\307\\312\\300">`:
+   \   00000000   C0C7D0C3C7D3       DC8 "\307\300\303\320\323\307\312\300"
+   \              C0CA00      
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\321\\314\\333\\312\\300\\315\\310\\305">`:
+   \   00000000   CCD1CADBCDC0       DC8 "\321\314\333\312\300\315\310\305"
+   \              C5C800      
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\320\\300\\307\\314\\333\\312\\300\\315\\3`:
+   \   00000000   C0D0CCC7CADB       DC8 "\320\300\307\314\333\312\300\315\310\305"
+   \              CDC0C5C800  
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\321\\322\\316\\317">`:
+   \   00000000   D2D1CFCE00         DC8 "\321\322\316\317"
+   \   00000005   C0CDC0CBCAC4       DC8 "\315\300\313\300\304\312\300"
+   \              00C0        
+   \   0000000D   C2C0CED2C0CC       DC8 "\300\302\322\316\314\300\322"
+   \              00D2        
+   \   00000015   D1CEC0D2CECD       DC8 "\316\321\322\300\315\316\302\312\300"
+   \              CAC200C0    
+   \   0000001F   C2C0D0C0C9C8       DC8 "\300\302\300\320\310\311\315\333\311 \321\322\316\317!"
+   \              DBCD20C9D2D1
+   \              CFCE0021    
+
+   \                                 In  segment NEAR_F, align 1, keep-with-next
+   \                     `?<Constant "\\307\\300\\304\\300\\315\\315\\300\\337 \\`:
+   \   00000000   C0C7C0C4CDCD       DC8 "\307\300\304\300\315\315\300\337 \322\305\314\317\305\320\300\322\323\320\300"
+   \              DFC0D220CCC5
+   \              C5CFC0D0D3D2
+   \              C0D000      
+   \   00000015   202020312020       DC8 "  1    2    3    4  "
+   \              322020202020
+   \              203320203420
+   \              202000      
+   \   0000002A   312030362020       DC8 " 160  165  170  175 "
+   \              363120353120
+   \              303720203731
+   \              203500      
+   \   0000003F   C5D2D3CAC0D9       DC8 "\322\305\312\323\331\300\337 \322\305\314\317\305\320\300\322\323\320\300"
+   \              20DFC5D2CFCC
+   \              D0C5D2C0D0D3
+   \              00C0        
+   \   00000053   312030302020       DC8 " 100  105  110  115 "
+   \              303120353120
+   \              303120203131
+   \              203500      
+   \   00000068   D7D1D2C5C8D7       DC8 "\321\327\305\322\327\310\312"
+   \              00CA        
+   \   00000070   CEC3CED2CEC2       DC8 "\303\316\322\316\302\316        \307\300\304\300\315\316"
+   \              202020202020
+   \              2020C0C7C0C4
+   \              CECD00      
+   \   00000085   303030303330       DC8 "000003        999999"
+   \              202020202020
+   \              202039393939
+   \              393900      
+    291          //=======================================================================================================================================================================================================================================================
+
+   Maximum stack usage in bytes:
+
+   CSTACK RSTACK Function
+   ------ ------ --------
+       0      2  Tui_Service_Main_Init
+                   0 2 -> Set_Menu_Level
+       0      2  Tui_Service_Main_Out_Mode
+                   0 2 -> proc_menu_keys
+                   0 2 -> show_mode
+       2      2  Tui_Service_Main_Parameters
+                   2 2 -- Indirect call
+                   2 2 -> proc_menu_keys
+       0      2  _PrintChar
+       0      2  _Print_Buf
+                   0 2 -> init_dsp_buf
+       0      2  clr_sMess
+                   0 2 -> _clr_string
+       0      2  clr_sMode
+                   0 2 -> _clr_string
+       0      2  clr_service_dsp_array
+                   0 2 -> _clr_string
+       0      2  menu_parameters_init
+       0      2  out_mode_init
+       0      2  show_mode
+                   0 2 -> _Print_Buf
+                   0 2 -> _clr_string
+       0      2  show_service_menu
+                   0 2 -> GetKeyCode
+                   0 2 -> _Print_Buf
+                   0 2 -> clr_service_dsp_array
+       0      2  tui_service
+                   0 2 -- Indirect call
+                   0 2 -> kbd_drv
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      12  ?<Constant "2\321\322.\302\317\320\333\321\312
+       7  ?<Constant "\302\317\320\333\321\312">
+       6  ?<Constant "\302\320\305\314\337">
+      14  ?<Constant "\302\333\322\300\313\312\310\302\3
+       9  ?<Constant "\304\300\302\313\305\315\310\305">
+       9  ?<Constant "\307\300\303\320\323\307\312\300">
+     154  ?<Constant "\307\300\304\300\315\315\300\337 \
+      14  ?<Constant "\314\305\306\304\323 \326\310\312\
+      11  ?<Constant "\316\325\313\300\306\304\305\315\3
+      10  ?<Constant "\317\300\320\300\314\305\322\320\3
+      11  ?<Constant "\320\300\307\314\333\312\300\315\3
+       9  ?<Constant "\321\312\316\320\316\321\322\334">
+       9  ?<Constant "\321\314\333\312\300\315\310\305">
+      47  ?<Constant "\321\322\316\317">
+      16  ?<Constant "\321\327\305\322\327\310\312 \310\
+      12  ?<Constant "\322\305\314\317\305\320\300\322\3
+      13  ?<Constant "\323\307\305\313 \302\317\320\333\
+       6  ?<Constant "\324\316\320\314\300">
+       8  ?Subroutine1
+       4  ?Subroutine2
+       2  ?Subroutine3
+      10  ?Subroutine4
+       4  ?Subroutine7
+       2  ?Subroutine8
+       6  ?Subroutine9
+      16  EJECTOR
+      16  L1_I1_TEMP
+      16  L1_I2_TIME
+      16  L1_I3_SPEED
+      16  L1_I4_PRESSURE
+      16  L1_I5_INJECTION_UNIT
+      16  L1_I6_FORM
+      16  L1_I7_EJECTOR
+      16  L1_I8_COUNTER
+      16  L2_I1_TEMP
+      16  L2_I4_PRESSURE
+      16  L2_I5_INJECTION_UNIT
+      16  L2_I6_FORM
+      16  L2_I8_COUNTER
+      16  L_OUT_MODE
+      16  SPEED_I1_CLOSE
+      16  SPEED_I2_OPEN
+      16  SPEED_I3_INJECTION
+      16  SPEED_I4_LOADING
+      16  TIME_I1_COOLING
+      16  TIME_I2_2_LEVEL_INJECTION
+      16  TIME_I3_PAUSE_CYCLES
+      16  TIME_I4_INJECTION
+      16  TIME_I5_LOADING
+       8  Tui_Service_Main_Init
+      12  Tui_Service_Main_Out_Mode
+      34  Tui_Service_Main_Parameters
+       6  _PrintChar
+      30  _Print_Buf
+       6  clr_sMess
+       0  clr_sMode
+      18  clr_service_dsp_array
+      18  menu_parameters_init
+      24  out_mode_init
+       1  pos_curs
+      88  show_mode
+     100  show_service_menu
+      48  tui_service
+       5  tui_service_blink_colon
+          tui_service_blink_string
+          _tui_service_main
+          _tui_service_slave
+          tui_termoplast_mode
+       1  tui_service_flags
+       6  tui_service_func
+       6  -- Other
+
+ 
+ 428 bytes in segment CODE
+   6 bytes in segment INITTAB
+ 759 bytes in segment NEAR_F
+   7 bytes in segment NEAR_Z
+ 
+ 1 187 bytes of CODE memory (+ 6 bytes shared)
+     7 bytes of DATA memory
+
+Errors: none
+Warnings: none

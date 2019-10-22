@@ -1,0 +1,12 @@
+;	STMicroelectronics Workspace file
+
+[Version]
+Keyword=ST7Workspace-V0.7
+
+[Project0]
+Filename=currgen_v01.stp
+Dependencies=
+[Options]
+ActiveProject=currgen_v01
+ActiveConfig=Debug
+AddSortedElements=1
