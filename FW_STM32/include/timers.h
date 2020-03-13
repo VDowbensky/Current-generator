@@ -5,7 +5,7 @@
 #include "stm32f10x_tim.h"
 #include "main.h"
 
-extern void initTIM4(void);
+extern void initTIM7(void);
 extern void delay_ms (uint16_t ms);
 
 

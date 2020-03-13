@@ -29,11 +29,7 @@ uint8_t crc;
 void test_loop(void)
 {
   TestMode = 1; //for interrupt switching
-  //switch_to_tx();
-  //work_mode = WORK_MODE_TX;
-  //RF69_calctemp(); 
-  //RF69_setopmode (RF_OPMODE_TRANSMITTER);
-  RF69_setopmode (RF_OPMODE_STANDBY);
+
   Red_On();
   while(1)
   {
@@ -52,20 +48,7 @@ void test_loop(void)
       handlecommand(Command);
       clearRxBuff();
     }
-    if(RF69_RXtimeout >= F_CORR_TIME)
-    {
-      //store operation mode
-      //measure temp. and correct RF frequency
-      RF69_setopmode (RF_OPMODE_STANDBY);
-      RF69_calctemp();
-      if(FreqTest == 1)
-      {
-      //switch to OOK mode and set 1
-      //RF69_setmodulation(DATA_MODE_NOBITSYNC | MOD_TYPE_OOK | MOD_SHAPING_NONE);
-      RF69_setopmode (RF_OPMODE_TRANSMITTER);
-      }
-      RF69_RXtimeout = 0;
-    }
+
 		
 		
   }
@@ -105,9 +88,6 @@ void cbUSART1_RXtestirq(void)
 
 }
 
-////////////////////////////////////////////////////
-//#define TXPREFIX 0xC96C //"handset" ;)
-//#define RXPREFIX 0x236B //"base station" ;)
 
 void rec_headH(void)
 {

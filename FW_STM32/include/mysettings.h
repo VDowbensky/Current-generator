@@ -1,7 +1,6 @@
 #ifndef _MYSETTINGS_H_
 #define _MYSETTINGS_H_
 
-#include "rfm69.h"
 
 #define BAUDRATE 115200UL
 

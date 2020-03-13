@@ -93,7 +93,7 @@ void DIO0_IRQhandler(void) //EXTI15_10_IRQn
   if(EXTI_GetITStatus(DIO0_EXTI_LINE) == SET)
   {
     EXTI_ClearITPendingBit(DIO0_EXTI_LINE);
-		RF69_RXflag = 1;
+		
 	}
 }
 
